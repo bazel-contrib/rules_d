@@ -1,15 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@package_metadata//rules:package_metadata.bzl", "package_metadata")
 load("//d/private:resolved_toolchain.bzl", "resolved_toolchain")
-
-package_metadata(
-    name = "package_metadata",
-    purl = "pkg:bazel/{}@{}".format(
-        module_name(),
-        module_version(),
-    ),
-    visibility = ["//visibility:public"],
-)
 
 # For stardoc to reference the files
 exports_files(["defs.bzl"])
@@ -31,6 +21,17 @@ resolved_toolchain(
 )
 
 bzl_library(
+    name = "defs",
+    srcs = ["defs.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//d/private/rules:binary",
+        "//d/private/rules:library",
+        "//d/private/rules:test",
+    ],
+)
+
+bzl_library(
     name = "repositories",
     srcs = ["repositories.bzl"],
     visibility = ["//visibility:public"],
@@ -47,17 +48,6 @@ bzl_library(
     srcs = ["extensions.bzl"],
     visibility = ["//visibility:public"],
     deps = [":repositories"],
-)
-
-bzl_library(
-    name = "defs",
-    srcs = ["defs.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//d/private/rules:binary",
-        "//d/private/rules:library",
-        "//d/private/rules:test",
-    ],
 )
 
 bzl_library(

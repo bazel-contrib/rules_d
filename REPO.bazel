@@ -2,6 +2,6 @@
 
 repo(
     default_package_metadata = [
-        "//d:package_metadata",
+        "//:package_metadata",
     ],
 )
