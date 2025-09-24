@@ -1,5 +1,6 @@
 """Common definitions for D rules."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//d/private:providers.bzl", "DInfo")
 
@@ -18,6 +19,8 @@ common_attrs = {
         allow_empty = False,
     ),
     "deps": attr.label_list(doc = "List of dependencies.", providers = [[CcInfo], [DInfo]]),
+    "imports": attr.string_list(doc = "List of import paths."),
+    "string_imports": attr.string_list(doc = "List of string import paths."),
     "string_srcs": attr.label_list(doc = "List of string import source files."),
     "versions": attr.string_list(doc = "List of version identifiers."),
     "_linux_constraint": attr.label(default = "@platforms//os:linux", doc = "Linux platform constraint"),
@@ -97,17 +100,21 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         for lib in li.libraries
     ])
     d_deps = [d[DInfo] for d in ctx.attr.deps if DInfo in d]
-    import_paths = depset(transitive = [d.import_paths for d in d_deps])
-    string_import_paths = depset(
-        ["."] if ctx.files.string_srcs else [],
-        transitive = [d.string_import_paths for d in d_deps],
+    imports = depset(
+        [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
+        transitive = [d.imports for d in d_deps],
+    )
+    string_imports = depset(
+        ([ctx.label_package] if ctx.files.string_srcs else []) +
+        [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
+        transitive = [d.string_imports for d in d_deps],
     )
     versions = depset(ctx.attr.versions, transitive = [d.versions for d in d_deps])
     args = ctx.actions.args()
     args.add_all(COMPILATION_MODE_FLAGS[ctx.var["COMPILATION_MODE"]])
     args.add_all(ctx.files.srcs)
-    args.add_all(import_paths.to_list(), format_each = "-I=%s")
-    args.add_all(string_import_paths.to_list(), format_each = "-J=%s")
+    args.add_all(imports.to_list(), format_each = "-I=%s")
+    args.add_all(string_imports.to_list(), format_each = "-J=%s")
     args.add_all(toolchain.compiler_flags)
     args.add_all(versions.to_list(), format_each = "-version=%s")
     args.add_all(toolchain.linker_flags)
@@ -131,7 +138,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         inputs = depset(
             ctx.files.srcs + ctx.files.string_srcs,
             transitive = [toolchain.d_compiler[DefaultInfo].default_runfiles.files] +
-                         [d.imports for d in d_deps] +
+                         [d.interface_srcs for d in d_deps] +
                          [d.libraries for d in d_deps] +
                          [c_libraries],
         ),
@@ -147,13 +154,14 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         return [
             DefaultInfo(files = depset([output])),
             DInfo(
-                import_paths = depset(
-                    [ctx.label.package],
-                    transitive = [d.import_paths for d in d_deps],
-                ),
                 imports = depset(
-                    ctx.files.srcs + ctx.files.string_srcs,
+                    [ctx.label.package] +
+                    [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
                     transitive = [d.imports for d in d_deps],
+                ),
+                interface_srcs = depset(
+                    ctx.files.srcs + ctx.files.string_srcs,
+                    transitive = [d.interface_srcs for d in d_deps],
                 ),
                 libraries = depset(
                     [] if ctx.attr.source_only else [output],
@@ -161,9 +169,10 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
                     transitive = [d.libraries for d in d_deps] +
                                  [c_libraries],
                 ),
-                string_import_paths = depset(
-                    [ctx.label.package] if ctx.files.string_srcs else [],
-                    transitive = [d.string_import_paths for d in d_deps],
+                string_imports = depset(
+                    ([ctx.label.package] if ctx.files.string_srcs else []) +
+                    [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
+                    transitive = [d.string_imports for d in d_deps],
                 ),
                 versions = versions,
             ),

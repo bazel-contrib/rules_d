@@ -1,0 +1,21 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_d//d:defs.bzl", "d_binary", "d_library")
+
+d_library(
+    name = "no_prefix_import",
+    srcs = ["path1/no_prefix_import.d"],
+    imports = ["path1"],
+)
+
+d_binary(
+    name = "imports_attribute",
+    srcs = [
+        "main.d",
+    ],
+    deps = [":no_prefix_import"],
+)
+
+build_test(
+    name = "imports_attribute_test",
+    targets = [":imports_attribute"],
+)
