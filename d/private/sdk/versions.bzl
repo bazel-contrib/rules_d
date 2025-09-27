@@ -1,7 +1,8 @@
 """Mirror of D compiler release information.
 
 This file is generated with:
-python3 d/private/sdk/versions_generator/generate_versions_bzl.py -c ~/.cache/d_releases --github-token <GITHUB_TOKEN> -o d/private/sdk/versions.bzl
+bazel run -- //tools:generate_compiler_versions_bzl -c ~/.cache/d_releases --github-token <GITHUB_TOKEN> \
+    -o ${PWD}/d/private/sdk/versions.bzl
 """
 
 SDK_VERSIONS = {

@@ -1,4 +1,5 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@rules_d//d:defs.bzl", "d_binary")
 
 gazelle_binary(
     name = "gazelle_bin",
@@ -8,4 +9,14 @@ gazelle_binary(
 gazelle(
     name = "gazelle",
     gazelle = "gazelle_bin",
+)
+
+d_binary(
+    name = "generate_compiler_versions_bzl",
+    srcs = [
+        "curl_downloader.d",
+        "generate_compiler_versions_bzl.d",
+    ],
+    linkopts = ["-lcurl"],
+    tags = ["manual"],
 )
