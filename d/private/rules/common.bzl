@@ -19,7 +19,9 @@ common_attrs = {
         allow_empty = False,
     ),
     "deps": attr.label_list(doc = "List of dependencies.", providers = [[CcInfo], [DInfo]]),
+    "dopts": attr.string_list(doc = "Compiler flags."),
     "imports": attr.string_list(doc = "List of import paths."),
+    "linkopts": attr.string_list(doc = "Linker flags passed via -L flags."),
     "string_imports": attr.string_list(doc = "List of string import paths."),
     "string_srcs": attr.label_list(doc = "List of string import source files."),
     "versions": attr.string_list(doc = "List of version identifiers."),
@@ -100,10 +102,12 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         for lib in li.libraries
     ])
     d_deps = [d[DInfo] for d in ctx.attr.deps if DInfo in d]
+    compiler_flags = depset(ctx.attr.dopts, transitive = [d.compiler_flags for d in d_deps])
     imports = depset(
         [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
         transitive = [d.imports for d in d_deps],
     )
+    linker_flags = depset(ctx.attr.linkopts, transitive = [d.linker_flags for d in d_deps])
     string_imports = depset(
         ([ctx.label_package] if ctx.files.string_srcs else []) +
         [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
@@ -116,8 +120,10 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
     args.add_all(imports.to_list(), format_each = "-I=%s")
     args.add_all(string_imports.to_list(), format_each = "-J=%s")
     args.add_all(toolchain.compiler_flags)
+    args.add_all(compiler_flags.to_list())
     args.add_all(versions.to_list(), format_each = "-version=%s")
     args.add_all(toolchain.linker_flags)
+    args.add_all(linker_flags.to_list(), format_each = "-L=%s")
     output = None
     if target_type in [TARGET_TYPE.BINARY, TARGET_TYPE.TEST]:
         for dep in d_deps:
@@ -154,6 +160,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         return [
             DefaultInfo(files = depset([output])),
             DInfo(
+                compiler_flags = compiler_flags,
                 imports = depset(
                     [ctx.label.package] +
                     [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
@@ -169,6 +176,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
                     transitive = [d.libraries for d in d_deps] +
                                  [c_libraries],
                 ),
+                linker_flags = linker_flags,
                 string_imports = depset(
                     ([ctx.label.package] if ctx.files.string_srcs else []) +
                     [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
