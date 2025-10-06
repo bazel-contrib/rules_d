@@ -9,11 +9,14 @@ import std.json : JSONValue, parseJSON;
 import std.path : baseName, buildPath;
 import std.range : empty, take;
 import std.stdio : File, writefln, writeln;
+import std.string : assumeUTF;
 import std.regex : escaper, matchAll, matchFirst, regex;
 import std.typecons : Nullable, nullable, tuple;
 
 import curl_downloader : CurlDownloader, CurlException;
+import integrity_hash : computeIntegrityHash;
 
+string GITHUB_API_URL = "https://api.github.com/repos";
 string GITHUB_LDC_REPO = "ldc-developers/ldc";
 
 string[] ARCHIVE_TYPES = [".tar.xz", ".zip"]; // in order of the preference
@@ -100,7 +103,7 @@ auto getDmdReleases(int lookbackYears)
     writefln("Getting DMD compiler releases since %s...", cutoffYear);
 
     auto downloader = CurlDownloader();
-    auto response = downloader.get(DMD_CHANGELOG_URL);
+    string response = downloader.get(DMD_CHANGELOG_URL).assumeUTF;
     auto compilerVersions = response
         .matchAll("<li><a id=\"(.*)\" href=.*[(](\\w{3} \\d{1,2}, \\d{4})[)]</span></li>")
         .filter!(match => cutoffYear <= match[2][$ - 4 .. $].to!int)
@@ -114,7 +117,7 @@ auto getDmdReleases(int lookbackYears)
         try
         {
             writefln("Found dmd-%s", version_);
-            response = downloader.get(DMD_REPO_URL ~ "/releases/2.x/" ~ version_ ~ "/");
+            response = downloader.get(DMD_REPO_URL ~ "/releases/2.x/" ~ version_ ~ "/").assumeUTF;
         }
         catch (CurlException e)
         {
@@ -159,8 +162,9 @@ auto getLdcReleases(int lookbackYears, string githubToken)
     writefln("Getting LDC compiler releases since %s...", cutoffYear);
 
     auto downloader = CurlDownloader();
-    auto response = downloader.get(
-        format!"https://api.github.com/repos/%s/releases?per_page=1000"(GITHUB_LDC_REPO), githubToken);
+    string response = downloader
+        .get(format!"%s/%s/releases?per_page=1000"(GITHUB_API_URL, GITHUB_LDC_REPO), githubToken)
+        .assumeUTF;
 
     auto releases = parseJSON(response);
     auto compilerReleases = appender!(CompilerReleaseInfo[])();
@@ -181,7 +185,7 @@ auto getLdcReleases(int lookbackYears, string githubToken)
     return removeDuplicates(compilerReleases.data);
 }
 
-void downloadRelease(CompilerReleaseInfo release, string cacheDir, string authToken = "")
+void downloadRelease(CompilerReleaseInfo release, string cacheDir)
 {
     auto assetFile = buildPath(cacheDir, release.fileName);
     if (assetFile.exists && assetFile.getSize > 0)
@@ -193,7 +197,7 @@ void downloadRelease(CompilerReleaseInfo release, string cacheDir, string authTo
     try
     {
         auto downloader = CurlDownloader();
-        downloader.downloadToFile(release.url, assetFile, authToken);
+        downloader.downloadToFile(release.url, assetFile);
     }
     catch (CurlException e)
     {
@@ -203,21 +207,6 @@ void downloadRelease(CompilerReleaseInfo release, string cacheDir, string authTo
     }
 
     writefln("Downloaded %s to %s.", release.fileName, assetFile);
-}
-
-void computeIntegrityMetadata(CompilerReleaseInfo[] releases, string cacheDir)
-{
-    import std.base64 : Base64;
-    import std.digest.sha : SHA384;
-
-    writefln("Computing integrity metadata");
-    foreach (i, ref r; releases)
-    {
-        auto file = File(buildPath(cacheDir, r.fileName), "rb");
-        SHA384 sha384;
-        file.byChunk(1024 * 1024).each!(chunk => sha384.put(chunk));
-        r.integrity = format!"sha384-%s"(Base64.encode(sha384.finish).to!string);
-    }
 }
 
 string platformId(string os, string cpu)
@@ -297,14 +286,11 @@ void main(string[] args)
     if (!skipLdc)
         compilerReleases.put(getLdcReleases(lookbackYears, githubToken));
 
-    foreach (release; compilerReleases.data)
-    {
-        string authToken = release.compiler == "ldc" ? githubToken : "";
-        enforce(!authToken.empty || release.compiler != "ldc", "Error: Empty GitHub token");
-        downloadRelease(release, cacheDir, authToken);
-    }
-
-    compilerReleases.data.computeIntegrityMetadata(cacheDir);
+    writeln("Downloading compiler releases");
+    compilerReleases.data.each!(r => r.downloadRelease(cacheDir));
+    writeln("Computing integrity metadata");
+    compilerReleases.data
+        .each!((ref r) => r.integrity = buildPath(cacheDir, r.fileName).computeIntegrityHash!384);
 
     if (!sdkVersionsBzlFile.empty)
         generateVersionsBzl(

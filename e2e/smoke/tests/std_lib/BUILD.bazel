@@ -1,0 +1,12 @@
+load("@rules_d//d:defs.bzl", "d_binary", "d_test")
+
+d_binary(
+    name = "fiber_thread_usage",
+    srcs = ["fiber_thread_usage.d"],
+    visibility = ["//visibility:public"],
+)
+
+d_test(
+    name = "fiber_thread_usage_test",
+    srcs = ["fiber_thread_usage.d"],
+)

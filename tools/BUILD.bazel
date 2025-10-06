@@ -1,5 +1,5 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
-load("@rules_d//d:defs.bzl", "d_binary")
+load("@rules_d//d:defs.bzl", "d_binary", "d_library")
 
 gazelle_binary(
     name = "gazelle_bin",
@@ -11,12 +11,21 @@ gazelle(
     gazelle = "gazelle_bin",
 )
 
+d_library(
+    name = "d_utils",
+    srcs = [
+        "curl_downloader.d",
+        "integrity_hash.d",
+    ],
+    linkopts = ["-lcurl"],
+    visibility = ["//dub:__subpackages__"],
+)
+
 d_binary(
     name = "generate_compiler_versions_bzl",
     srcs = [
-        "curl_downloader.d",
         "generate_compiler_versions_bzl.d",
     ],
-    linkopts = ["-lcurl"],
-    tags = ["manual"],
+    tags = ["manual"],  # Not built by default; 'curl' dependency may not be available on all platforms.
+    deps = [":d_utils"],
 )

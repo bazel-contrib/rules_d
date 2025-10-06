@@ -9,7 +9,8 @@ Public API of D rules.
 <pre>
 load("@rules_d//d:defs.bzl", "d_binary")
 
-d_binary(<a href="#d_binary-name">name</a>, <a href="#d_binary-deps">deps</a>, <a href="#d_binary-srcs">srcs</a>, <a href="#d_binary-dopts">dopts</a>, <a href="#d_binary-imports">imports</a>, <a href="#d_binary-linkopts">linkopts</a>, <a href="#d_binary-string_imports">string_imports</a>, <a href="#d_binary-string_srcs">string_srcs</a>, <a href="#d_binary-versions">versions</a>)
+d_binary(<a href="#d_binary-name">name</a>, <a href="#d_binary-deps">deps</a>, <a href="#d_binary-srcs">srcs</a>, <a href="#d_binary-data">data</a>, <a href="#d_binary-dopts">dopts</a>, <a href="#d_binary-env">env</a>, <a href="#d_binary-imports">imports</a>, <a href="#d_binary-linkopts">linkopts</a>, <a href="#d_binary-string_imports">string_imports</a>, <a href="#d_binary-string_srcs">string_srcs</a>,
+         <a href="#d_binary-versions">versions</a>)
 </pre>
 
 
@@ -22,7 +23,9 @@ d_binary(<a href="#d_binary-name">name</a>, <a href="#d_binary-deps">deps</a>, <
 | <a id="d_binary-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="d_binary-deps"></a>deps |  List of dependencies.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="d_binary-srcs"></a>srcs |  List of D '.d' or '.di' source files.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="d_binary-data"></a>data |  List of files to be made available at runtime.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="d_binary-dopts"></a>dopts |  Compiler flags.   | List of strings | optional |  `[]`  |
+| <a id="d_binary-env"></a>env |  Environment variables for the binary at runtime. Subject of location and make variable expansion.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 | <a id="d_binary-imports"></a>imports |  List of import paths.   | List of strings | optional |  `[]`  |
 | <a id="d_binary-linkopts"></a>linkopts |  Linker flags passed via -L flags.   | List of strings | optional |  `[]`  |
 | <a id="d_binary-string_imports"></a>string_imports |  List of string import paths.   | List of strings | optional |  `[]`  |
@@ -67,7 +70,7 @@ d_library(<a href="#d_library-name">name</a>, <a href="#d_library-deps">deps</a>
 <pre>
 load("@rules_d//d:defs.bzl", "d_test")
 
-d_test(<a href="#d_test-name">name</a>, <a href="#d_test-deps">deps</a>, <a href="#d_test-srcs">srcs</a>, <a href="#d_test-dopts">dopts</a>, <a href="#d_test-imports">imports</a>, <a href="#d_test-linkopts">linkopts</a>, <a href="#d_test-string_imports">string_imports</a>, <a href="#d_test-string_srcs">string_srcs</a>, <a href="#d_test-versions">versions</a>)
+d_test(<a href="#d_test-name">name</a>, <a href="#d_test-deps">deps</a>, <a href="#d_test-srcs">srcs</a>, <a href="#d_test-data">data</a>, <a href="#d_test-dopts">dopts</a>, <a href="#d_test-env">env</a>, <a href="#d_test-imports">imports</a>, <a href="#d_test-linkopts">linkopts</a>, <a href="#d_test-string_imports">string_imports</a>, <a href="#d_test-string_srcs">string_srcs</a>, <a href="#d_test-versions">versions</a>)
 </pre>
 
 
@@ -80,7 +83,9 @@ d_test(<a href="#d_test-name">name</a>, <a href="#d_test-deps">deps</a>, <a href
 | <a id="d_test-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="d_test-deps"></a>deps |  List of dependencies.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="d_test-srcs"></a>srcs |  List of D '.d' or '.di' source files.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="d_test-data"></a>data |  List of files to be made available at runtime.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="d_test-dopts"></a>dopts |  Compiler flags.   | List of strings | optional |  `[]`  |
+| <a id="d_test-env"></a>env |  Environment variables for the binary at runtime. Subject of location and make variable expansion.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 | <a id="d_test-imports"></a>imports |  List of import paths.   | List of strings | optional |  `[]`  |
 | <a id="d_test-linkopts"></a>linkopts |  Linker flags passed via -L flags.   | List of strings | optional |  `[]`  |
 | <a id="d_test-string_imports"></a>string_imports |  List of string import paths.   | List of strings | optional |  `[]`  |

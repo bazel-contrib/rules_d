@@ -1,5 +1,7 @@
 """Common definitions for D rules."""
 
+load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//d/private:providers.bzl", "DInfo")
@@ -30,6 +32,21 @@ common_attrs = {
     "_windows_constraint": attr.label(default = "@platforms//os:windows", doc = "Windows platform constraint"),
 }
 
+runnable_attrs = dicts.add(
+    common_attrs,
+    {
+        "env": attr.string_dict(doc = "Environment variables for the binary at runtime. Subject of location and make variable expansion."),
+        "data": attr.label_list(allow_files = True, doc = "List of files to be made available at runtime."),
+    },
+)
+
+library_attrs = dicts.add(
+    common_attrs,
+    {
+        "source_only": attr.bool(doc = "If true, the source files are compiled, but not library is produced."),
+    },
+)
+
 def _get_os(ctx):
     if ctx.target_platform_has_constraint(ctx.attr._linux_constraint[platform_common.ConstraintValueInfo]):
         return "linux"
@@ -38,7 +55,7 @@ def _get_os(ctx):
     elif ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]):
         return "windows"
     else:
-        fail("Unsupported OS: %s" % ctx.label)
+        fail("OS not supported")
 
 def _binary_name(ctx, name):
     """Returns the name of the binary based on the OS.
@@ -104,13 +121,13 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
     d_deps = [d[DInfo] for d in ctx.attr.deps if DInfo in d]
     compiler_flags = depset(ctx.attr.dopts, transitive = [d.compiler_flags for d in d_deps])
     imports = depset(
-        [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
+        [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.imports],
         transitive = [d.imports for d in d_deps],
     )
     linker_flags = depset(ctx.attr.linkopts, transitive = [d.linker_flags for d in d_deps])
     string_imports = depset(
-        ([ctx.label_package] if ctx.files.string_srcs else []) +
-        [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
+        ([paths.join(ctx.label.workspace_root, ctx.label.package)] if ctx.files.string_srcs else []) +
+        [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.string_imports],
         transitive = [d.string_imports for d in d_deps],
     )
     versions = depset(ctx.attr.versions, transitive = [d.versions for d in d_deps])
@@ -162,8 +179,8 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
             DInfo(
                 compiler_flags = compiler_flags,
                 imports = depset(
-                    [ctx.label.package] +
-                    [paths.join(ctx.label.package, imp) for imp in ctx.attr.imports],
+                    [paths.join(ctx.label.workspace_root, ctx.label.package)] +
+                    [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.imports],
                     transitive = [d.imports for d in d_deps],
                 ),
                 interface_srcs = depset(
@@ -178,12 +195,22 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
                 ),
                 linker_flags = linker_flags,
                 string_imports = depset(
-                    ([ctx.label.package] if ctx.files.string_srcs else []) +
-                    [paths.join(ctx.label.package, imp) for imp in ctx.attr.string_imports],
+                    ([paths.join(ctx.label.workspace_root, ctx.label.package)] if ctx.files.string_srcs else []) +
+                    [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.string_imports],
                     transitive = [d.string_imports for d in d_deps],
                 ),
                 versions = versions,
             ),
         ]
     else:
-        return [DefaultInfo(executable = output)]
+        env_with_expansions = {
+            k: expand_variables(ctx, ctx.expand_location(v, ctx.files.data), [output], "env")
+            for k, v in ctx.attr.env.items()
+        }
+        return [
+            DefaultInfo(
+                executable = output,
+                runfiles = ctx.runfiles(files = ctx.files.data),
+            ),
+            RunEnvironmentInfo(environment = env_with_expansions),
+        ]

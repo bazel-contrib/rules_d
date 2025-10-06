@@ -24,6 +24,8 @@ bzl_library(
     ],
     deps = [
         "//d/private:providers",
+        "@aspect_bazel_lib//lib:expand_make_vars",
+        "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
         "@rules_cc//cc/common",
     ],

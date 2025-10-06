@@ -13,7 +13,7 @@ def _resolved_toolchain_impl(ctx):
     return [
         toolchain_info,
         toolchain_info.default,
-        toolchain_info.dinfo,
+        toolchain_info.d_toolchain_info,
         toolchain_info.template_variables,
     ]
 

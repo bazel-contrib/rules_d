@@ -1,21 +1,10 @@
 """Provides a simple way to test your rules as an external workspace."""
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_d//d:defs.bzl", "d_binary", "d_test")
-
-d_binary(
-    name = "fiber_thread_usage",
-    srcs = ["fiber_thread_usage.d"],
-)
-
-d_test(
-    name = "fiber_thread_usage_test",
-    srcs = ["fiber_thread_usage.d"],
-)
 
 build_test(
     name = "smoke_test",
     targets = [
-        ":fiber_thread_usage",
+        "//tests/std_lib:fiber_thread_usage",
     ],
 )

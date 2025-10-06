@@ -1,6 +1,6 @@
 """D test rule for compiling binaries."""
 
-load("//d/private/rules:common.bzl", "TARGET_TYPE", "common_attrs", "compilation_action")
+load("//d/private/rules:common.bzl", "TARGET_TYPE", "compilation_action", "runnable_attrs")
 
 def _d_binary_impl(ctx):
     """Implementation of d_binary rule."""
@@ -8,7 +8,7 @@ def _d_binary_impl(ctx):
 
 d_binary = rule(
     implementation = _d_binary_impl,
-    attrs = common_attrs,
+    attrs = runnable_attrs,
     toolchains = ["//d:toolchain_type"],
     executable = True,
 )
