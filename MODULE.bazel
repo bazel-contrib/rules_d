@@ -6,7 +6,7 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "aspect_bazel_lib", version = "2.9.1")
+bazel_dep(name = "aspect_bazel_lib", version = "2.19.1")
 bazel_dep(name = "bazel_features", version = "1.32.0")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "package_metadata", version = "0.0.5")
