@@ -23,27 +23,54 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          # Need enough history to find the prior release tag
           fetch-depth: 0
+          fetch-tags: true
       - name: Check if there is a recent tag
         id: recent-tag
         # Only skip on cron trigger, not manual trigger
         if: github.event_name == 'schedule'
+        shell: bash
         run: |
+          # Skip bumping the tag if the latest tag is more recent than 2 weeks.
           # This is a trade-off between making too many releases,
           # which overwhelms BCR maintainers and over-notifies users,
           # and releasing too infrequently which delays delivery of bugfixes and features.
-          MAX_AGE=1209600  # 2 weeks
+          set -Eeuo pipefail
+          : "${GITHUB_OUTPUT:?}"
+          human_readable_duration() {
+            local secs=$1
+            local days=$((secs/86400))
+            local hours=$((secs%86400/3600))
+            local mins=$((secs%3600/60))
+            if ((days > 0)); then
+              printf '%dd %dh %dm' "$days" "$hours" "$mins"
+            elif ((hours > 0)); then
+              printf '%dh %dm' "$hours" "$mins"
+            elif ((mins > 0)); then
+              printf '%dm' "$mins"
+            else
+              printf '%ds' "$((secs%60))"
+            fi
+          }
+          # 2 weeks minus 12 hours to ensure reliable 2 weeks timing of the daily cron job
+          MAX_AGE=$((14 * 24 * 3600 - 12 * 3600))
+          # Ensure tags are fetched (checkout must have fetch-depth: 0, fetch-tags: true)
           TAG=$(git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*' --abbrev=0 2>/dev/null) || {
             echo "No matching tag — continue workflow."
+            echo "recently-tagged=false" >> "$GITHUB_OUTPUT"
             exit 0
           }
           TAG_TIME=$(git log -1 --format=%ct "$TAG")
           NOW=$(date +%s)
           AGE=$((NOW - TAG_TIME))
-          echo "Latest tag: $TAG ($AGE seconds ago)"
+          HUMAN_AGE=$(human_readable_duration "$AGE")
+          echo "Latest tag: $TAG (${HUMAN_AGE} ago, ${AGE}s total)"
           if [ "$AGE" -lt "$MAX_AGE" ]; then
             echo "recently-tagged=true" >> "$GITHUB_OUTPUT"
+            echo "A recent tag exists, skip tagging."
+          else
+            echo "recently-tagged=false" >> "$GITHUB_OUTPUT"
+            echo "No recent tag exists, a new tag will be created."
           fi
       - name: Bump tag if necessary
         id: ccv
