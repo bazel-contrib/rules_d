@@ -1,16 +1,10 @@
+# Import bazelrc presets
+import ../../tools/preset.bazelrc
+
+# project-specific settings
 startup --windows_enable_symlinks
-
-common --check_direct_dependencies=off
-common --enable_bzlmod
-common --enable_platform_specific_config
-common --enable_runfiles
-common --incompatible_disallow_empty_glob
-common --incompatible_strict_action_env
 common --lockfile_mode=off
-common --test_output=errors
 
-build --incompatible_strict_action_env
-build --nolegacy_external_runfiles
-build --reuse_sandbox_directories
-
-try-import %workspace%/.bazelrc.user
+# Allows tests to run bazelisk-in-bazel, since this is the cache folder used
+common:ci --disk_cache=~/.cache/bazel
+test:ci --test_env=XDG_CACHE_HOME

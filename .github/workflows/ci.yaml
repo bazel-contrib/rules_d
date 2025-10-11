@@ -26,6 +26,7 @@ jobs:
         [
           {"folder": ".", "bzlmodEnabled": false}
         ]
+      bazel_test_command: bazel test --config=ci //...
   pre-commit:
     runs-on: ubuntu-latest
     steps:

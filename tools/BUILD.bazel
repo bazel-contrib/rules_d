@@ -1,5 +1,12 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@bazelrc-preset.bzl", "bazelrc_preset")
 load("@rules_d//d:defs.bzl", "d_binary", "d_library")
+
+bazelrc_preset(
+    name = "preset",
+    strict = True,
+    tags = ["manual"],
+)
 
 gazelle_binary(
     name = "gazelle_bin",
