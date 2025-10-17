@@ -1,6 +1,6 @@
 """Common definitions for D rules."""
 
-load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
+load("@bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")

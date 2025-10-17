@@ -1,4 +1,4 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_lib//:bzl_library.bzl", "bzl_library")
 load("//d/private:resolved_toolchain.bzl", "resolved_toolchain")
 
 # For stardoc to reference the files
@@ -38,6 +38,7 @@ bzl_library(
     deps = [
         "//d/private:toolchains_repo",
         "//d/private/sdk:versions",
+        "@bazel_tools//tools/build_defs/repo:cache.bzl",
         "@bazel_tools//tools/build_defs/repo:http.bzl",
         "@bazel_tools//tools/build_defs/repo:utils.bzl",
     ],
