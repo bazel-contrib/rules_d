@@ -157,14 +157,18 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
     else:
         fail("Unsupported target type: %s" % target_type)
 
+    transitive_library_inputs = []
+    if target_type != TARGET_TYPE.LIBRARY:
+        transitive_library_inputs += [d.libraries for d in d_deps] + [c_libraries]
+    inputs = depset(
+        direct = ctx.files.srcs + ctx.files.string_srcs,
+        transitive = [toolchain.d_compiler[DefaultInfo].default_runfiles.files] +
+                     [d.interface_srcs for d in d_deps] +
+                     transitive_library_inputs,
+    )
+
     ctx.actions.run(
-        inputs = depset(
-            ctx.files.srcs + ctx.files.string_srcs,
-            transitive = [toolchain.d_compiler[DefaultInfo].default_runfiles.files] +
-                         [d.interface_srcs for d in d_deps] +
-                         [d.libraries for d in d_deps] +
-                         [c_libraries],
-        ),
+        inputs = inputs,
         outputs = [output],
         executable = toolchain.d_compiler[DefaultInfo].files_to_run,
         arguments = [args],
