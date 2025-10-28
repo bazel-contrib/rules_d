@@ -1,5 +1,9 @@
 # Bazel Rules for the [D Programming Language](https://dlang.org)
 
+## API Documentation
+
+https://registry.bazel.build/docs/rules_d
+
 ## Installation
 
 From the release you wish to use:
