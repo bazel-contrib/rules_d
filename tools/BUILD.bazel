@@ -4,6 +4,7 @@ load("@rules_d//d:defs.bzl", "d_binary", "d_library")
 
 bazelrc_preset(
     name = "preset",
+    doc_link_template = "https://registry.build/flag/bazel?filter={flag}",
     strict = True,
     tags = ["manual"],
 )
