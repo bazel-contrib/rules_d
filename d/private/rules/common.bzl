@@ -5,6 +5,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//d/private:providers.bzl", "DInfo")
+load("//d/private/rules:cc_toolchain.bzl", "find_cc_toolchain_for_linking")
 
 D_FILE_EXTENSIONS = [".d", ".di"]
 
@@ -37,6 +38,10 @@ runnable_attrs = dicts.add(
     {
         "env": attr.string_dict(doc = "Environment variables for the binary at runtime. Subject of location and make variable expansion."),
         "data": attr.label_list(allow_files = True, doc = "List of files to be made available at runtime."),
+        "_cc_toolchain": attr.label(
+            default = "@rules_cc//cc:current_cc_toolchain",
+            doc = "Default CC toolchain, used for linking. Remove after https://github.com/bazelbuild/bazel/issues/7260 is flipped (and support for old Bazel version is not needed)",
+        ),
     },
 )
 
@@ -142,6 +147,8 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
     args.add_all(toolchain.linker_flags)
     args.add_all(linker_flags.to_list(), format_each = "-L=%s")
     output = None
+    cc_toolchain = None
+    env = ctx.var
     if target_type in [TARGET_TYPE.BINARY, TARGET_TYPE.TEST]:
         for dep in d_deps:
             args.add_all(dep.libraries)
@@ -150,6 +157,23 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
             args.add_all(["-main", "-unittest"])
         output = ctx.actions.declare_file(_binary_name(ctx, ctx.label.name))
         args.add(output, format = "-of=%s")
+        cc_linker_info = find_cc_toolchain_for_linking(ctx)
+        env = dict(cc_linker_info.env)
+        env.update({
+            "CC": cc_linker_info.cc_compiler,  # Have to use the env variable here, since DMD doesn't support -gcc= flag
+            # Ok, this is a bit weird. Local toolchain from rules_cc works fine if we don't set PATH here.
+            # But doesn't work if we set it to an empty string.
+            # OTOH the toolchain from toolchains_llvm doesn't work without setting PATH here. (Can't find the linker executable)
+            # Even though the cc_wrapper script adds "/usr/bin" to the PATH variable,
+            # it only works if the PATH is already in the environment. (I think they have to `export`)
+            # So toolchains_llvm works if we set PATH to "" but doesn't work if we don't set it at all.
+            # So, to get to a common ground, we set PATH to something generic.
+            "PATH": "/bin:/usr/bin:/usr/local/bin",
+        })
+        if _get_os(ctx) != "windows":
+            # DMD doesn't support -Xcc on Windows
+            args.add_all(cc_linker_info.cc_linking_options, format_each = "-Xcc=%s")
+        cc_toolchain = cc_linker_info.cc_toolchain
     elif target_type == TARGET_TYPE.LIBRARY:
         args.add("-lib")
         output = ctx.actions.declare_file(_static_library_name(ctx, ctx.label.name))
@@ -169,11 +193,12 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
 
     ctx.actions.run(
         inputs = inputs,
+        tools = [cc_toolchain.all_files] if cc_toolchain else [],
         outputs = [output],
         executable = toolchain.d_compiler[DefaultInfo].files_to_run,
         arguments = [args],
-        env = ctx.var,
-        use_default_shell_env = target_type != TARGET_TYPE.LIBRARY,  # True to make the linker work properly
+        env = env,
+        use_default_shell_env = False,
         mnemonic = "Dcompile",
         progress_message = "Compiling D %s %s" % (target_type, ctx.label.name),
     )

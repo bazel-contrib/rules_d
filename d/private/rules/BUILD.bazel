@@ -16,6 +16,21 @@ bzl_library(
 )
 
 bzl_library(
+    name = "cc_toolchain",
+    srcs = ["cc_toolchain.bzl"],
+    visibility = [
+        "//d:__subpackages__",
+        "//docs:__subpackages__",
+    ],
+    deps = [
+        "@bazel_tools//tools/build_defs/cc:action_names.bzl",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+        "@rules_cc//cc/common",
+        "@rules_cc//cc:find_cc_toolchain_bzl",  # transitive dependency of @bazel_tools//tools/cpp:toolchain_utils.bzl
+    ],
+)
+
+bzl_library(
     name = "common",
     srcs = ["common.bzl"],
     visibility = [
@@ -24,6 +39,7 @@ bzl_library(
     ],
     deps = [
         "//d/private:providers",
+        "//d/private/rules:cc_toolchain",
         "@bazel_lib//lib:expand_make_vars",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
