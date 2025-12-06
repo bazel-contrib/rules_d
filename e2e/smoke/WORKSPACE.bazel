@@ -46,9 +46,9 @@ bazel_features_deps()
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "10a0d58f39a1a909e95e00e8ba0b5b1dc64d02997f741151953a2b3659f6e78c",
-    strip_prefix = "protobuf-29.0",
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz",
+    sha256 = "6b6599b54c88d75904b7471f5ca34a725fa0af92e134dd1a32d5b395aa4b4ca8",
+    strip_prefix = "protobuf-33.2",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v33.2/protobuf-33.2.tar.gz",
 )
 
 load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
