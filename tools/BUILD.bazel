@@ -26,8 +26,8 @@ d_library(
         "curl_downloader.d",
         "integrity_hash.d",
     ],
-    linkopts = ["-lcurl"],
     visibility = ["//dub:__subpackages__"],
+    deps = ["@curl"],
 )
 
 d_binary(
@@ -35,6 +35,5 @@ d_binary(
     srcs = [
         "generate_compiler_versions_bzl.d",
     ],
-    tags = ["manual"],  # Not built by default; 'curl' dependency may not be available on all platforms.
     deps = [":d_utils"],
 )

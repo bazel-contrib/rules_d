@@ -21,14 +21,8 @@ _UNSUPPORTED_FEATURES = [
 ]
 
 _LINKER_OPTIONS_DENYLIST = {
-    # Don't link C++ libraries
-    "-lstdc++": None,
-    "-lc++": None,
-    "-lc++abi": None,
-    # libm and libobjc are added by the D compiler already, so suppress them here, to avoid warnings
-    "-lm": None,
-    "-lobjc": None,
-    "-fobjc-link-runtime": None,
+    # d-runtime uses __start/__stop_minfo
+    "-Wl,--gc-sections": None,
     # --target is passed by the D compiler
     "--target=": None,
     # --target passed by the D compiler conflicts with -mmacosx-version-min set by cc_toolchain

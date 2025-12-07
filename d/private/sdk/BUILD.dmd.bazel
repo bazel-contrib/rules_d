@@ -91,7 +91,12 @@ d_toolchain(
             "-L--export-dynamic",
         ],
         "@platforms//os:macos": ["-L-L{D_COMPILER_ROOT}/osx/lib"],
-        "@platforms//os:windows": ["-L/LIBPATH:{D_COMPILER_ROOT}/windows/lib64"],
+        "@platforms//os:windows": [
+            "-L/LIBPATH:{D_COMPILER_ROOT}/windows/lib64",
+            "-L/DEFAULTLIB:msvcrt.lib",
+            "-L/NODEFAULTLIB:libcmt",
+            "-L/INCREMENTAL:NO",
+        ],
     }),
     rdmd_tool = ":rdmd",
 )

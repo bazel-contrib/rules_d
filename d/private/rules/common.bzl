@@ -112,24 +112,38 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         The provider containing the compilation information.
     """
     toolchain = ctx.toolchains["//d:toolchain_type"].d_toolchain_info
-    c_deps = [d[CcInfo] for d in ctx.attr.deps if CcInfo in d]
-    c_linker_inputs = [
+    cc_deps = [d[CcInfo] for d in ctx.attr.deps if CcInfo in d]
+    cc_linker_inputs = [
         linker_input
-        for dep in c_deps
+        for dep in cc_deps
         for linker_input in dep.linking_context.linker_inputs.to_list()
     ]
-    c_libraries = depset([
+    cc_libraries = depset([
         lib.pic_static_library if lib.pic_static_library else lib.static_library
-        for li in c_linker_inputs
+        for li in cc_linker_inputs
         for lib in li.libraries
+    ], order = "topological")
+    fix_linker_flags = {
+        "-pthread": "-lpthread",
+    }
+    cc_linker_flags = depset([
+        fix_linker_flags.get(flag, flag)
+        for li in cc_linker_inputs
+        for flag in li.user_link_flags
     ])
     d_deps = [d[DInfo] for d in ctx.attr.deps if DInfo in d]
-    compiler_flags = depset(ctx.attr.dopts, transitive = [d.compiler_flags for d in d_deps])
+    compiler_flags = depset(
+        ctx.attr.dopts,
+        transitive = [d.compiler_flags for d in d_deps],
+    )
     imports = depset(
         [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.imports],
         transitive = [d.imports for d in d_deps],
     )
-    linker_flags = depset(ctx.attr.linkopts, transitive = [d.linker_flags for d in d_deps])
+    linker_flags = depset(
+        ctx.attr.linkopts,
+        transitive = [d.linker_flags for d in d_deps] + [cc_linker_flags],
+    )
     string_imports = depset(
         ([paths.join(ctx.label.workspace_root, ctx.label.package)] if ctx.files.string_srcs else []) +
         [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.string_imports],
@@ -144,15 +158,15 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
     args.add_all(toolchain.compiler_flags)
     args.add_all(compiler_flags.to_list())
     args.add_all(versions.to_list(), format_each = "-version=%s")
-    args.add_all(toolchain.linker_flags)
-    args.add_all(linker_flags.to_list(), format_each = "-L=%s")
     output = None
     cc_toolchain = None
     env = ctx.var
     if target_type in [TARGET_TYPE.BINARY, TARGET_TYPE.TEST]:
+        args.add_all(toolchain.linker_flags)
+        args.add_all(linker_flags.to_list(), format_each = "-L=%s")
         for dep in d_deps:
             args.add_all(dep.libraries)
-        args.add_all(c_libraries)
+        args.add_all(cc_libraries)
         if target_type == TARGET_TYPE.TEST:
             args.add_all(["-main", "-unittest"])
         output = ctx.actions.declare_file(_binary_name(ctx, ctx.label.name))
@@ -183,7 +197,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
 
     transitive_library_inputs = []
     if target_type != TARGET_TYPE.LIBRARY:
-        transitive_library_inputs += [d.libraries for d in d_deps] + [c_libraries]
+        transitive_library_inputs += [d.libraries for d in d_deps] + [cc_libraries]
     inputs = depset(
         direct = ctx.files.srcs + ctx.files.string_srcs,
         transitive = [toolchain.d_compiler[DefaultInfo].default_runfiles.files] +
@@ -219,8 +233,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
                 libraries = depset(
                     [] if ctx.attr.source_only else [output],
                     order = "topological",
-                    transitive = [d.libraries for d in d_deps] +
-                                 [c_libraries],
+                    transitive = [d.libraries for d in d_deps] + [cc_libraries],
                 ),
                 linker_flags = linker_flags,
                 string_imports = depset(
