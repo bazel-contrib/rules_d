@@ -91,8 +91,5 @@ bzl_library(
 bzl_library(
     name = "utils",
     srcs = ["utils.bzl"],
-    visibility = [
-        "//d:__subpackages__",
-        "//docs:__subpackages__",
-    ],
+    visibility = ["//d:__subpackages__"],
 )
