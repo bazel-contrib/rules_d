@@ -15,6 +15,9 @@ _UNSUPPORTED_FEATURES = [
     "use_header_modules",
     "fdo_instrument",
     "fdo_optimize",
+    # disable PIC support for now
+    # TODO: re-enable, but we need to have pic_objects/pic_static_library everywhere
+    "supports_pic",
     # This is a nonspecific unsupported feature which allows the authors of C++
     # toolchain to apply separate flags when compiling D code.
     "rules_d_unsupported_feature",
@@ -86,4 +89,5 @@ def find_cc_toolchain_for_linking(ctx):
         cc_compiler = cc_compiler,
         cc_linking_options = cc_linking_options,
         env = env,
+        feature_configuration = feature_configuration,
     )

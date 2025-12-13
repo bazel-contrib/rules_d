@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_import")
 load("@rules_d//d:toolchain.bzl", "d_toolchain")
 
 filegroup(
@@ -27,6 +28,16 @@ filegroup(
     srcs = glob(["lib/**"]),
 )
 
+cc_import(
+    name = "druntime",
+    static_library = "lib/libdruntime-ldc.a",
+)
+
+cc_import(
+    name = "libphobos",
+    static_library = "lib/libphobos2-ldc.a",
+)
+
 filegroup(
     name = "dmd",
     srcs = ["bin/ldmd2"],
@@ -52,7 +63,9 @@ d_toolchain(
     name = "d_toolchain",
     compiler_flags = [],
     d_compiler = ":dmd",
+    druntime = ":druntime",
     dub_tool = ":dub",
+    libphobos = ":libphobos",
     linker_flags = [],
     rdmd_tool = ":rdmd",
 )

@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_import")
 load("@rules_d//d:toolchain.bzl", "d_toolchain")
 
 filegroup(
@@ -70,6 +71,15 @@ filegroup(
     data = [":dmd"],
 )
 
+cc_import(
+    name = "libphobos",
+    static_library = select({
+        "@platforms//os:linux": "linux/lib64/libphobos2.a",
+        "@platforms//os:macos": "osx/lib/libphobos2.a",
+        "@platforms//os:windows": "windows/lib64/phobos64.lib",
+    }),
+)
+
 d_toolchain(
     name = "d_toolchain",
     compiler_flags = [
@@ -83,19 +93,17 @@ d_toolchain(
     }),
     d_compiler = ":dmd",
     dub_tool = ":dub",
-    linker_flags = [
-        "-conf=",
-    ] + select({
+    libphobos = ":libphobos",
+    linker_flags = select({
         "@platforms//os:linux": [
-            "-L-L{D_COMPILER_ROOT}/linux/lib64",
-            "-L--export-dynamic",
+            "-L{D_COMPILER_ROOT}/linux/lib64",
         ],
-        "@platforms//os:macos": ["-L-L{D_COMPILER_ROOT}/osx/lib"],
+        "@platforms//os:macos": ["-L{D_COMPILER_ROOT}/osx/lib"],
         "@platforms//os:windows": [
-            "-L/LIBPATH:{D_COMPILER_ROOT}/windows/lib64",
-            "-L/DEFAULTLIB:msvcrt.lib",
-            "-L/NODEFAULTLIB:libcmt",
-            "-L/INCREMENTAL:NO",
+            "/LIBPATH:{D_COMPILER_ROOT}/windows/lib64",
+            "/DEFAULTLIB:msvcrt.lib",
+            "/NODEFAULTLIB:libcmt",
+            "/INCREMENTAL:NO",
         ],
     }),
     rdmd_tool = ":rdmd",

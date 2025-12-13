@@ -12,7 +12,10 @@ bzl_library(
         "//d:__subpackages__",
         "//docs:__subpackages__",
     ],
-    deps = ["//d/private/rules:common"],
+    deps = [
+        "//d/private/rules:compile",
+        "//d/private/rules:link",
+    ],
 )
 
 bzl_library(
@@ -30,19 +33,17 @@ bzl_library(
 )
 
 bzl_library(
-    name = "common",
-    srcs = ["common.bzl"],
+    name = "compile",
+    srcs = ["compile.bzl"],
     visibility = [
         "//d:__subpackages__",
         "//docs:__subpackages__",
     ],
     deps = [
         "//d/private:providers",
-        "//d/private/rules:cc_toolchain",
-        "@bazel_lib//lib:expand_make_vars",
+        "//d/private/rules:utils",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
-        "@rules_cc//cc/common",
     ],
 )
 
@@ -54,8 +55,21 @@ bzl_library(
         "//docs:__subpackages__",
     ],
     deps = [
-        "//d/private/rules:common",
-        "@rules_cc//cc:find_cc_toolchain_bzl",
+        "//d/private/rules:compile",
+    ],
+)
+
+bzl_library(
+    name = "link",
+    srcs = ["link.bzl"],
+    visibility = [
+        "//d:__subpackages__",
+        "//docs:__subpackages__",
+    ],
+    deps = [
+        "//d/private/rules:cc_toolchain",
+        "@bazel_lib//lib:expand_make_vars",
+        "@rules_cc//cc:defs_bzl",
     ],
 )
 
@@ -67,7 +81,17 @@ bzl_library(
         "//docs:__subpackages__",
     ],
     deps = [
-        "//d/private/rules:common",
+        "//d/private/rules:compile",
+        "//d/private/rules:link",
         "@rules_cc//cc:find_cc_toolchain_bzl",
+    ],
+)
+
+bzl_library(
+    name = "utils",
+    srcs = ["utils.bzl"],
+    visibility = [
+        "//d:__subpackages__",
+        "//docs:__subpackages__",
     ],
 )

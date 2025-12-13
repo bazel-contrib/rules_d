@@ -6,7 +6,9 @@ DToolchainInfo = provider(
     fields = {
         "compiler_flags": "Default compiler flags.",
         "d_compiler": "The D compiler executable.",
+        "druntime": "The D runtime library. (LDC only)",
         "dub_tool": "The dub package manager executable.",
+        "libphobos": "The Phobos library.",
         "linker_flags": "Default linker flags.",
         "rdmd_tool": "The rdmd compile and execute utility.",
     },
@@ -46,6 +48,8 @@ def _d_toolchain_impl(ctx):
         dub_tool = ctx.attr.dub_tool,
         linker_flags = [_expand_toolchain_variables(ctx, flag) for flag in ctx.attr.linker_flags],
         rdmd_tool = ctx.attr.rdmd_tool,
+        druntime = ctx.attr.druntime,
+        libphobos = ctx.attr.libphobos,
     )
 
     # Export all the providers inside our ToolchainInfo
@@ -73,10 +77,16 @@ d_toolchain = rule(
             mandatory = True,
             cfg = "exec",
         ),
+        "druntime": attr.label(
+            doc = "The D runtime library.",
+        ),
         "dub_tool": attr.label(
             doc = "The dub package manager.",
             executable = True,
             cfg = "exec",
+        ),
+        "libphobos": attr.label(
+            doc = "The Phobos library.",
         ),
         "linker_flags": attr.string_list(
             doc = "Linker flags.",
