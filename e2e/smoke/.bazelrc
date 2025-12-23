@@ -3,7 +3,7 @@ import ../../tools/preset.bazelrc
 
 # project-specific settings
 startup --windows_enable_symlinks
-common --lockfile_mode=off
+common:ci --lockfile_mode=off
 
 # Allows tests to run bazelisk-in-bazel, since this is the cache folder used
 common:ci --disk_cache=~/.cache/bazel

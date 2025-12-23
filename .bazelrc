@@ -19,7 +19,7 @@ common --config=ruleset
 # versions of Bazel may expect different syntax. Bazel also implicitly requires
 # some modules, and different versions have different dependencies, which
 # also affects the contents of the lock file.
-common --lockfile_mode=update
+common:ci --lockfile_mode=update
 
 # project-specific settings
 startup --windows_enable_symlinks
