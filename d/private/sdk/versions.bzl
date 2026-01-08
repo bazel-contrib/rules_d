@@ -692,6 +692,20 @@ SDK_VERSIONS = {
             "integrity": "sha384-MyiIaDOaDetXXf62ODHyvCJdnzvxrcirKUF172/ddP+eCM/iBUbOMIlundl0Wqo0",
         },
     },
+    "dmd-2.112.0": {
+        "x86_64-unknown-linux-gnu": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.0/dmd.2.112.0.linux.tar.xz",
+            "integrity": "sha384-ypWlWPOQ2W9Y1094OZEJUY6v1qS2GOenpya5nuPIMAlqgSopATllv5za/qaYmicl",
+        },
+        "x86_64-apple-darwin": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.0/dmd.2.112.0.osx.tar.xz",
+            "integrity": "sha384-jieyfzkf9LI7HohK3zZGZ0Toqbz1D3+lLY9IXB1Yf6dKcwFe64CQXnLNUqbVKcxY",
+        },
+        "x86_64-pc-windows-msvc": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.0/dmd.2.112.0.windows.zip",
+            "integrity": "sha384-UQqEzWgYPA3+ir36kCurs7vJDwNrgcKzqC19UvhijwcehP3htkWFT6auEZCDq8Dl",
+        },
+    },
     "ldc-1.20.0": {
         "aarch64-unknown-linux-gnu": {
             "url": "https://github.com/ldc-developers/ldc/releases/download/v1.20.0/ldc2-1.20.0-linux-aarch64.tar.xz",
