@@ -45,17 +45,16 @@ _ATTRS = {
     "platform": attr.string(mandatory = True, values = PLATFORMS.keys()),
 }
 
-def _archive_prefix(url):
+def _archive_prefixes(url):
     filename = url.rsplit("/", 1)[-1]
-    if filename.startswith("dmd"):
-        return "dmd2"
-    elif filename.startswith("ldc"):
-        for ext in [".tar.xz", ".zip"]:
-            if filename.endswith(ext):
-                return filename[:-len(ext)]
-        return filename
-    else:
-        fail("Unknown compiler archive %s" % filename)
+    stem = ""
+    for ext in [".tar.xz", ".zip"]:
+        if filename.endswith(ext):
+            stem = filename[:-len(ext)]
+            break
+    if not stem:
+        fail("Unknown archive name format: %s" % filename)
+    return ["%s/dmd2" % stem, "%s/ldc" % stem, stem, "dmd2", "ldc"]
 
 def _d_repo_impl(repository_ctx):
     d_version = repository_ctx.attr.d_version
@@ -66,11 +65,23 @@ def _d_repo_impl(repository_ctx):
     if platform not in SDK_VERSIONS[d_version]:
         fail("Unsupported platform: %s for %s" % (platform, d_version))
     sdk = SDK_VERSIONS[d_version][platform]
+    sdk_path = "sdk-out"
     repository_ctx.download_and_extract(
         url = sdk["url"],
         integrity = sdk["integrity"],
-        stripPrefix = _archive_prefix(sdk["url"]),
+        output = sdk_path,
     )
+    prefix_found = False
+    for prefix in _archive_prefixes(sdk["url"]):
+        prefix_path = repository_ctx.path("%s/%s" % (sdk_path, prefix))
+        if prefix_path.is_dir:
+            for entry in prefix_path.readdir():
+                repository_ctx.symlink(entry, entry.basename)
+            prefix_found = True
+            break
+    if not prefix_found:
+        fail("Unexpected archive structure: %s" % sdk["url"])
+
     build_bazel_template = "@rules_d//d/private/sdk:BUILD.%s.bazel" % d_version[0:3]
 
     # Base BUILD file for this repository
