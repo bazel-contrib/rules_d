@@ -88,7 +88,7 @@ rules_d_dependencies()
 
 d_register_toolchains(
     "dmd_toolchain",
-    d_version = "dmd-2.112.0",
+    d_version = "dmd-2.111.0",
 )
 
 d_register_toolchains(

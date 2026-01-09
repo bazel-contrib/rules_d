@@ -32,7 +32,7 @@ Add to your \`MODULE.bazel\` file:
 bazel_dep(name = "rules_d", version = "${TAG:1}")
 
 d = use_extension("//d:extensions.bzl", "d")
-d.toolchain(d_version = "dmd-2.112.0")
+d.toolchain(d_version = "dmd-2.111.0")
 use_repo(d, "d_toolchains")
 
 register_toolchains("@d_toolchains//:all")
