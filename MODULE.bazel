@@ -21,7 +21,7 @@ bazel_dep(name = "gazelle", version = "0.47.0", dev_dependency = True, repo_name
 
 # Select first d toolchain available for the current platform.
 d = use_extension("//d:extensions.bzl", "d")
-d.toolchain(d_version = "dmd-2.111.0")
+d.toolchain(d_version = "dmd-2.112.0")
 d.toolchain(d_version = "ldc-1.41.0")
 use_repo(d, "d_toolchains")
 
