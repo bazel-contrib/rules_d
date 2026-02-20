@@ -20,7 +20,7 @@ jobs:
       bazel_versions: |
         [
           "7.7.1",
-          "8.5.1",
+          "8.x",
           "9.0.0"
         ]
       folders: |
