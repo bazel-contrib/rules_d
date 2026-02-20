@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref_name != 'main' }}
 jobs:
   test:
-    uses: bazel-contrib/.github/.github/workflows/bazel.yaml@6e7b37881bcb47c59ca8a0b0cc0ea75ae9afd984 # DO NOT MERGE: waiting for a release
+    uses: dcarp/.github/.github/workflows/bazel.yaml@6e7b37881bcb47c59ca8a0b0cc0ea75ae9afd984 # DO NOT MERGE: waiting for a release
     with:
       bazel_versions: |
         [
