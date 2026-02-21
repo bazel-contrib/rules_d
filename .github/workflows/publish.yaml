@@ -21,7 +21,8 @@ on:
         type: string
 jobs:
   publish:
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@0bd40ad4f872b4d216d3f01bc0844ade304e2b5a # v1.1.0
+    # BCR PR workflows expects a git tag to be present in the repository, so we need to run this job on a git tag ref.
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0 # renovate:ignore 0bd40ad4f872b4d216d3f01bc0844ade304e2b5a
     with:
       tag_name: ${{ inputs.tag_name }}
       # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
