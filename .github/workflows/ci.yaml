@@ -15,8 +15,14 @@ concurrency:
   cancel-in-progress: ${{ github.ref_name != 'main' }}
 jobs:
   test:
-    uses: bazel-contrib/.github/.github/workflows/bazel.yaml@v7.3.0
+    uses: bazel-contrib/.github/.github/workflows/bazel.yaml@af28703814cf26522cf5e44d219efece91293123
     with:
+      bazel_versions: |
+        [
+          "7.x",
+          "8.x",
+          "9.x"
+        ]
       folders: |
         [
           ".",
@@ -24,15 +30,14 @@ jobs:
         ]
       exclude: |
         [
-          {"folder": ".", "bzlmodEnabled": false},
-          {"bazelversion": "9.x", "bzlmodEnabled": false}
+          {"folder": ".", "bzlmodEnabled": false}
         ]
       bazel_test_command: bazel test --config=ci //...
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.2
-      - uses: pre-commit/action@v3.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
   # For branch protection settings, this job provides a "stable" name that can be used to gate PR merges
   # on "all matrix jobs were successful".
   conclusion:

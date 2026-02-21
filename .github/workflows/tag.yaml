@@ -21,7 +21,7 @@ jobs:
       new-tag-version-type: ${{ steps.ccv.outputs.new-tag-version-type }}
       recently-tagged: ${{ steps.recent-tag.outputs.recently-tagged }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -75,7 +75,7 @@ jobs:
       - name: Bump tag if necessary
         id: ccv
         if: github.event_name != 'schedule' || steps.recent-tag.outputs.recently-tagged != 'true'
-        uses: smlx/ccv@v0.10.0
+        uses: smlx/ccv@7318e2f25a52dcd550e75384b84983973251a1f8 # v0.10.0
   release:
     needs: tag
     uses: ./.github/workflows/release.yaml
