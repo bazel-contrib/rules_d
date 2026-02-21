@@ -3,7 +3,7 @@
   "extends": ["config:best-practices"],
   "packageRules": [
     {
-      "matchFiles": ["MODULE.bazel"],
+      "matchFileNames": ["MODULE.bazel"],
       "enabled": false
     }
   ]
