@@ -127,6 +127,7 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
         use_default_shell_env = False,
         mnemonic = "Dcompile",
         progress_message = "Compiling D %s %s" % (target_type, ctx.label.name),
+        toolchain = "@rules_d//d:toolchain_type",
     )
     linker_input = cc_common.create_linker_input(
         owner = ctx.label,
