@@ -26,8 +26,8 @@ startup --windows_enable_symlinks
 # workaround for bazel8 error when --enable_workspace and --enable_bzlmod=false
 common --incompatible_autoload_externally=
 
-# Allows tests to run bazelisk-in-bazel, since this is the cache folder used
-common:ci --disk_cache=~/.cache/bazel
+# Keep the disk cache out of Bazel's own output base hierarchy.
+common:ci --disk_cache=~/.cache/bazel/disk_cache
 test:ci --test_env=XDG_CACHE_HOME
 
 # Load user-specific settings, if any
