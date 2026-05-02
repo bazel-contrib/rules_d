@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+import "common.proto";
+
+message Person {
+  string name = 1;
+  Email email = 2;
+}

@@ -6,6 +6,7 @@ load("@rules_d//dub:defs.bzl", "dub_lock_dependencies")
 build_test(
     name = "smoke_test",
     targets = [
+        "//tests/proto:addressbook_d_proto",
         "//tests/std_lib:fiber_thread_usage",
     ],
 )

@@ -35,6 +35,33 @@ def rules_d_dependencies():
         strip_prefix = "supply-chain-0.0.6/metadata",
         url = "https://github.com/bazel-contrib/supply-chain/releases/download/v0.0.6/supply-chain-v0.0.6.tar.gz",
     )
+    http_archive(
+        name = "protobuf",
+        sha256 = "07a43d88fe5a38e434c7f94129cad56a4c43a51f99336074d0799c2f7d4e44c5",
+        strip_prefix = "protobuf-30.2",
+        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v30.2.tar.gz",
+    )
+
+def protobuf_d_dependencies(name = "protobuf_d", version = "0.7.0", integrity = "sha256-LM6v/r8kTNl58zvc1v8LHxPkKLYoVbKoXMornDxMfUg=", sha256 = ""):
+    """Fetches the protobuf DUB package used by d_proto_library.
+
+    Args:
+        name: Repository name for the protobuf DUB package.
+        version: DUB package version.
+        integrity: Optional SRI integrity for the GitHub release archive.
+        sha256: Optional sha256 for the GitHub release archive.
+    """
+    kwargs = {
+        "strip_prefix": "protobuf-d-%s" % version,
+        "urls": [
+            "https://github.com/dcarp/protobuf-d/archive/refs/tags/v%s.tar.gz" % version,
+        ],
+    }
+    if integrity:
+        kwargs["integrity"] = integrity
+    if sha256:
+        kwargs["sha256"] = sha256
+    http_archive(name = name, **kwargs)
 
 ########
 # Remaining content of the file is only used to support toolchains.

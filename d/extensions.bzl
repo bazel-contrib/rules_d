@@ -10,7 +10,7 @@ names (the latest version will be picked for each name) and can register them as
 effectively overriding the default named toolchain due to toolchain resolution precedence.
 """
 
-load(":repositories.bzl", "d_register_toolchains", "select_compiler_by_os")
+load(":repositories.bzl", "d_register_toolchains", "protobuf_d_dependencies", "select_compiler_by_os")
 
 _DEFAULT_NAME = "d"
 
@@ -64,4 +64,11 @@ d = module_extension(
     # regardless of the host platform.
     os_dependent = False,
     arch_dependent = False,
+)
+
+def _protobuf_d_extension(_module_ctx):
+    protobuf_d_dependencies()
+
+protobuf_d = module_extension(
+    implementation = _protobuf_d_extension,
 )

@@ -1,0 +1,32 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@rules_d//d:defs.bzl", "d_binary", "d_proto_library")
+
+proto_library(
+    name = "common_proto",
+    srcs = ["common.proto"],
+    tags = ["manual"],
+)
+
+proto_library(
+    name = "addressbook_proto",
+    srcs = ["addressbook.proto"],
+    tags = ["manual"],
+    deps = [":common_proto"],
+)
+
+d_proto_library(
+    name = "addressbook_d_proto",
+    deps = [":addressbook_proto"],
+)
+
+d_binary(
+    name = "addressbook_usage",
+    srcs = ["usage.d"],
+    deps = [":addressbook_d_proto"],
+)
+
+build_test(
+    name = "addressbook_usage_test",
+    targets = [":addressbook_usage"],
+)

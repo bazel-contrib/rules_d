@@ -45,15 +45,15 @@ load("@bazel_features//:deps.bzl", "bazel_features_deps")
 bazel_features_deps()
 
 http_archive(
-    name = "com_google_protobuf",
-    sha256 = "10a0d58f39a1a909e95e00e8ba0b5b1dc64d02997f741151953a2b3659f6e78c",
-    strip_prefix = "protobuf-29.0",
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz",
+    name = "protobuf",
+    sha256 = "07a43d88fe5a38e434c7f94129cad56a4c43a51f99336074d0799c2f7d4e44c5",
+    strip_prefix = "protobuf-30.2",
+    url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v30.2.tar.gz",
 )
 
-load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
-proto_bazel_features(name = "proto_bazel_features")
+protobuf_deps()
 
 http_archive(
     name = "rules_cc",
@@ -91,7 +91,7 @@ http_archive(
 # you should fetch it *before* calling this.
 # Alternatively, you can skip calling this function, so long as you've
 # already fetched all the dependencies.
-load("@rules_d//d:repositories.bzl", "d_register_toolchains", "rules_d_dependencies")
+load("@rules_d//d:repositories.bzl", "d_register_toolchains", "protobuf_d_dependencies", "rules_d_dependencies")
 load("@rules_d//dub:repositories.bzl", "d_register_dub_repository")
 
 rules_d_dependencies()
@@ -99,6 +99,8 @@ rules_d_dependencies()
 d_register_dub_repository(
     dub_selections_lock = "//:dub.selections.lock.json",
 )
+
+protobuf_d_dependencies()
 
 d_register_toolchains(
     "dmd_toolchain",

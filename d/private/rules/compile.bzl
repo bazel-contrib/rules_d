@@ -58,7 +58,7 @@ TARGET_TYPE = struct(
     TEST = "test",
 )
 
-def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
+def d_compile(ctx, target_type = TARGET_TYPE.LIBRARY):
     """Defines a compilation action for D source files.
 
     Args:
@@ -160,5 +160,84 @@ def compilation_action(ctx, target_type = TARGET_TYPE.LIBRARY):
             [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.string_imports],
             transitive = [d.string_imports for d in d_deps],
         ),
+        versions = versions,
+    )
+
+def d_proto_compile(ctx, srcs, deps, import_root):
+    """Compiles generated D proto sources into a D library.
+
+    Args:
+        ctx: The aspect context.
+        srcs: Generated D source files to compile.
+        deps: Dependency targets providing CcInfo or DInfo.
+        import_root: Import path containing the generated D sources.
+    Returns:
+        The DInfo provider containing the compilation information.
+    """
+    toolchain = ctx.toolchains["//d:toolchain_type"].d_toolchain_info
+    c_deps = [d[CcInfo] for d in deps if CcInfo in d]
+    d_deps = [d[DInfo] for d in deps if DInfo in d]
+    compiler_flags = depset(transitive = [d.compiler_flags for d in d_deps])
+    imports = depset([import_root], transitive = [d.imports for d in d_deps])
+    linker_flags = depset(transitive = [d.linker_flags for d in d_deps])
+    string_imports = depset(transitive = [d.string_imports for d in d_deps])
+    versions = depset(transitive = [d.versions for d in d_deps])
+
+    args = ctx.actions.args()
+    args.add_all(COMPILATION_MODE_FLAGS[ctx.var["COMPILATION_MODE"]])
+    args.add_all(srcs)
+    args.add_all([i for i in imports.to_list() if i], format_each = "-I=%s")
+    args.add_all([si for si in string_imports.to_list() if si], format_each = "-J=%s")
+    args.add_all(toolchain.compiler_flags)
+    args.add_all(compiler_flags.to_list())
+    args.add_all([v for v in versions.to_list() if v], format_each = "-version=%s")
+    args.add("-lib")
+
+    output = ctx.actions.declare_file(static_library_name(ctx, ctx.label.name))
+    args.add(output, format = "-of=%s")
+
+    ctx.actions.run(
+        inputs = depset(
+            direct = srcs,
+            transitive = [toolchain.d_compiler[DefaultInfo].default_runfiles.files] +
+                         [d.interface_srcs for d in d_deps],
+        ),
+        outputs = [output],
+        executable = toolchain.d_compiler[DefaultInfo].files_to_run,
+        arguments = [args],
+        env = ctx.var,
+        use_default_shell_env = False,
+        mnemonic = "Dcompile",
+        progress_message = "Compiling D proto library %s" % ctx.label.name,
+        toolchain = "@rules_d//d:toolchain_type",
+    )
+
+    linker_input = cc_common.create_linker_input(
+        owner = ctx.label,
+        libraries = depset(direct = [cc_common.create_library_to_link(
+            actions = ctx.actions,
+            static_library = output,
+        )]),
+    )
+    linking_context = cc_common.create_linking_context(
+        linker_inputs = depset(
+            direct = [linker_input],
+            transitive = [
+                d.linking_context.linker_inputs
+                for d in c_deps + d_deps
+            ],
+        ),
+    )
+    return DInfo(
+        compilation_output = output,
+        compiler_flags = compiler_flags,
+        imports = depset(
+            [import_root, paths.join(ctx.label.workspace_root, ctx.label.package)],
+            transitive = [d.imports for d in d_deps],
+        ),
+        interface_srcs = depset(srcs, transitive = [d.interface_srcs for d in d_deps]),
+        linking_context = linking_context,
+        linker_flags = linker_flags,
+        string_imports = string_imports,
         versions = versions,
     )

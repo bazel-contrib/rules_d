@@ -1,6 +1,7 @@
 bazel_dep(name = "rules_d", version = "0.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "protobuf", version = "30.2")
 
 local_path_override(
     module_name = "rules_d",
@@ -12,3 +13,6 @@ dub.from_dub_selections(
     dub_selections_lock = "//:dub.selections.lock.json",
 )
 use_repo(dub, "dub")
+
+protobuf_d = use_extension("@rules_d//d:extensions.bzl", "protobuf_d")
+use_repo(protobuf_d, "protobuf_d")

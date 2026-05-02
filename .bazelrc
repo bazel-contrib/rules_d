@@ -25,6 +25,8 @@ common:ci --lockfile_mode=update
 startup --windows_enable_symlinks
 # workaround for bazel8 error when --enable_workspace and --enable_bzlmod=false
 common --incompatible_autoload_externally=
+# BoringSSL currently fails under GCC 16's const-qualified memchr warning.
+common --per_file_copt=external/boringssl~/.+@-Wno-error=discarded-qualifiers
 
 # Keep the disk cache out of Bazel's own output base hierarchy.
 common:ci --disk_cache=~/.cache/bazel/disk_cache

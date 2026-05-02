@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message Email {
+  string value = 1;
+}

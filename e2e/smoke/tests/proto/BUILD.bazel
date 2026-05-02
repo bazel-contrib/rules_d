@@ -1,0 +1,20 @@
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@rules_d//d:defs.bzl", "d_proto_library", "d_test")
+
+proto_library(
+    name = "addressbook_proto",
+    srcs = ["addressbook.proto"],
+)
+
+d_proto_library(
+    name = "addressbook_d_proto",
+    visibility = ["//visibility:public"],
+    deps = [":addressbook_proto"],
+)
+
+d_test(
+    name = "addressbook_usage",
+    srcs = ["usage.d"],
+    visibility = ["//visibility:public"],
+    deps = [":addressbook_d_proto"],
+)

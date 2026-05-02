@@ -25,6 +25,7 @@ bzl_library(
     deps = [
         "//d/private/rules:binary",
         "//d/private/rules:library",
+        "//d/private/rules:proto",
         "//d/private/rules:test",
     ],
 )
