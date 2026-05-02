@@ -26,7 +26,16 @@ startup --windows_enable_symlinks
 # workaround for bazel8 error when --enable_workspace and --enable_bzlmod=false
 common --incompatible_autoload_externally=
 # BoringSSL currently fails under GCC 16's const-qualified memchr warning.
-common --per_file_copt=external/boringssl~/.+@-Wno-error=discarded-qualifiers
+common:linux --per_file_copt=external/boringssl~/.+@-Wno-error=discarded-qualifiers
+# Protobuf 30.x requires C++17 for generated tools.
+common:linux --host_cxxopt=-std=c++17
+common:linux --cxxopt=-std=c++17
+common:macos --host_cxxopt=-std=c++17
+common:macos --cxxopt=-std=c++17
+common:windows --host_cxxopt=/std:c++17
+common:windows --cxxopt=/std:c++17
+# Protobuf 30.x requires an explicit opt-in for MSVC builds.
+common:windows --define=protobuf_allow_msvc=true
 
 # Keep the disk cache out of Bazel's own output base hierarchy.
 common:ci --disk_cache=~/.cache/bazel/disk_cache

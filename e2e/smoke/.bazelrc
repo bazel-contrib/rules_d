@@ -4,8 +4,14 @@ import ../../tools/preset.bazelrc
 # project-specific settings
 startup --windows_enable_symlinks
 # Protobuf's upb tool sources require C++17 when built by Bazel 7.
-common --host_cxxopt=-std=c++17
-common --cxxopt=-std=c++17
+common:linux --host_cxxopt=-std=c++17
+common:linux --cxxopt=-std=c++17
+common:macos --host_cxxopt=-std=c++17
+common:macos --cxxopt=-std=c++17
+common:windows --host_cxxopt=/std:c++17
+common:windows --cxxopt=/std:c++17
+# Protobuf 30.x requires an explicit opt-in for MSVC builds.
+common:windows --define=protobuf_allow_msvc=true
 common:ci --lockfile_mode=off
 
 # Keep the disk cache out of Bazel's own output base hierarchy.
