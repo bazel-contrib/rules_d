@@ -42,19 +42,19 @@ def rules_d_dependencies():
         url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v30.2.tar.gz",
     )
 
-def protobuf_d_dependencies(name = "protobuf_d", version = "0.7.0", integrity = "sha256-LM6v/r8kTNl58zvc1v8LHxPkKLYoVbKoXMornDxMfUg=", sha256 = ""):
+def protobuf_d_dependencies(name = "protobuf_d", version = "0.7.0", integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=", sha256 = ""):
     """Fetches the protobuf DUB package used by d_proto_library.
 
     Args:
         name: Repository name for the protobuf DUB package.
         version: DUB package version.
-        integrity: Optional SRI integrity for the GitHub release archive.
-        sha256: Optional sha256 for the GitHub release archive.
+        integrity: Optional SRI integrity for the DUB package archive.
+        sha256: Optional sha256 for the DUB package archive.
     """
     kwargs = {
         "strip_prefix": "protobuf-d-%s" % version,
         "urls": [
-            "https://github.com/dcarp/protobuf-d/archive/refs/tags/v%s.tar.gz" % version,
+            "https://code.dlang.org/packages/protobuf/%s.zip" % version,
         ],
     }
     if integrity:

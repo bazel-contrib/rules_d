@@ -4,7 +4,8 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@protobuf//bazel/common:proto_info.bzl", "ProtoInfo")
 load("@rules_cc//cc:defs.bzl", "cc_common")
 load("//d/private:providers.bzl", "DInfo")
-load("//d/private/rules:compile.bzl", "d_proto_compile")
+load("//d/private/rules:compile.bzl", "d_compile")
+load("//d/private/rules:utils.bzl", "static_library_name")
 
 _ProtoDFilesInfo = provider(
     doc = "Generated D proto files.",
@@ -105,11 +106,21 @@ def _d_proto_aspect_impl(target, ctx):
         progress_message = "Generating D sources from proto %s" % ctx.label.name,
     )
 
-    d_info = d_proto_compile(
-        ctx,
+    d_info = d_compile(
+        actions = ctx.actions,
+        label = ctx.label,
+        toolchain = ctx.toolchains["//d:toolchain_type"].d_toolchain_info,
+        compilation_mode = ctx.var["COMPILATION_MODE"],
+        env = ctx.var,
         srcs = generated_srcs,
         deps = d_deps,
-        import_root = _generated_root(ctx),
+        dopts = [],
+        imports = [_generated_root(ctx)],
+        linkopts = [],
+        string_srcs = [],
+        string_imports = [],
+        versions = [],
+        output = ctx.actions.declare_file(static_library_name(ctx, ctx.label.name)),
     )
     transitive_files = [dep[_ProtoDFilesInfo].files for dep in proto_deps if _ProtoDFilesInfo in dep]
     return [

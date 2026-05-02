@@ -1,13 +1,32 @@
 """D test rule for compiling binaries."""
 
 load("@bazel_lib//lib:expand_make_vars.bzl", "expand_variables")
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load("//d/private/rules:compile.bzl", "TARGET_TYPE", "d_compile", "runnable_attrs")
 load("//d/private/rules:link.bzl", "link_action")
+load("//d/private/rules:utils.bzl", "object_file_name")
 
 def _d_binary_impl(ctx):
     """Implementation of d_binary rule."""
-    d_info = d_compile(ctx, target_type = TARGET_TYPE.BINARY)
+    d_info = d_compile(
+        actions = ctx.actions,
+        label = ctx.label,
+        toolchain = ctx.toolchains["//d:toolchain_type"].d_toolchain_info,
+        compilation_mode = ctx.var["COMPILATION_MODE"],
+        env = ctx.var,
+        srcs = ctx.files.srcs,
+        deps = ctx.attr.deps,
+        dopts = ctx.attr.dopts,
+        imports = [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.imports],
+        linkopts = ctx.attr.linkopts,
+        string_srcs = ctx.files.string_srcs,
+        string_imports = ([paths.join(ctx.label.workspace_root, ctx.label.package)] if ctx.files.string_srcs else []) +
+                         [paths.join(ctx.label.workspace_root, ctx.label.package, imp) for imp in ctx.attr.string_imports],
+        versions = ctx.attr.versions,
+        output = ctx.actions.declare_file(object_file_name(ctx, ctx.label.name)),
+        target_type = TARGET_TYPE.BINARY,
+    )
     output = link_action(ctx, d_info)
     env_with_expansions = {
         k: expand_variables(ctx, ctx.expand_location(v, ctx.attr.data), [output], "env")
