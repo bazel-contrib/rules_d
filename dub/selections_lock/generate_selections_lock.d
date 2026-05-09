@@ -1,6 +1,6 @@
 module dub.selections_lock.generate_selections_lock;
 
-import std.algorithm : canFind, each, find, filter, map, startsWith;
+import std.algorithm : canFind, each, find, filter, map, sort, startsWith;
 import std.array : array, assocArray, replace;
 import std.conv : to;
 import std.exception : enforce;
@@ -14,6 +14,8 @@ import std.stdio : File, toFile;
 import std.typecons : Flag, tuple;
 
 import integrity_hash : computeIntegrityHash;
+import mvs : ModuleVersion, minimalVersionSelection;
+import semver : SemVer, SemVerRange;
 
 struct Config
 {
@@ -130,12 +132,55 @@ Package[] readDubDependencies(string filePath)
     auto fileName = filePath.baseName;
     if (fileName == "dub.selections.json")
         return filePath.readText.parseDubSelectionsJson;
-    if (fileName == "dub.json" || fileName == "dub.sdl")
+    if (fileName.endsWith(".json"))
+    {
+        auto content = filePath.readText;
+        auto json = content.parseJSON;
+        if (json.type == JSONType.object &&
+            "fileVersion" in json.object &&
+            "versions" in json.object)
+            return content.parseDubSelectionsJson;
+        return filePath.generateDubSelectionsJson.parseDubSelectionsJson;
+    }
+    if (fileName == "dub.sdl")
         return filePath.generateDubSelectionsJson.parseDubSelectionsJson;
 
-    enforce(false, "Unsupported input file %s. Expected dub.json, dub.sdl, or dub.selections.json.".format(
+    enforce(false, "Unsupported input file %s. Expected JSON selections, dub.json, or dub.sdl.".format(
             filePath));
     return [];
+}
+
+Package[] resolveDubDependencies(Package[] packages)
+{
+    enum rootVersion = "0.0.0";
+    enum rootPrefix = "__rules_d_dub_lock_root_";
+    SemVerRange[string] rootConstraints;
+    SemVer[][string] availableVersions;
+    SemVerRange[string][ModuleVersion] dependencies;
+    Package[ModuleVersion] packageByVersion;
+
+    foreach (i, package_; packages)
+    {
+        auto semVer = SemVer(package_.version_);
+        enforce(semVer.isValid, "Invalid semantic version '%s' for package %s.".format(
+                package_.version_, package_.name));
+        auto rootName = rootPrefix ~ i.to!string;
+        rootConstraints[rootName] = SemVerRange(">=" ~ rootVersion);
+        availableVersions[rootName] = [SemVer(rootVersion)];
+        dependencies[ModuleVersion(rootName, SemVer(rootVersion))] = [
+            package_.name: SemVerRange(">=" ~ package_.version_),
+        ];
+        availableVersions[package_.name] ~= semVer;
+        packageByVersion[ModuleVersion(package_.name, semVer)] = package_;
+    }
+
+    auto selectedVersions = minimalVersionSelection(rootConstraints, availableVersions, dependencies);
+    return selectedVersions.byKeyValue
+        .filter!(item => !item.key.startsWith(rootPrefix))
+        .array
+        .sort!((a, b) => a.key < b.key)
+        .map!(item => packageByVersion[ModuleVersion(item.key, item.value)])
+        .array;
 }
 
 void download(Package package_)
@@ -417,7 +462,7 @@ int main(string[] args)
     string bazelGeneratingTarget;
     string cachePath;
     string dub;
-    string inputFilePath;
+    string[] inputFilePaths;
     string outputFilePath;
     bool skipSSLVerification;
     bool verbose;
@@ -426,7 +471,7 @@ int main(string[] args)
         "bazel_generating_target|b", "Document the bazel generating target.", &bazelGeneratingTarget,
         "cache_path|c", "Path to dub cache.", &cachePath,
         "dub|d", "Path to dub executable.", &dub,
-        "input|i", "Input file path. One of dub.json, dub.sdl or, dub.selections.json.", &inputFilePath,
+        "input|i", "Input file path. May be repeated. One of dub.json, dub.sdl or, dub.selections.json.", &inputFilePaths,
         "output|o", "Output dub.selections.lock.json file path.", &outputFilePath,
         "skip_ssl_verification|s", "Skip SSL verification when downloading packages.", &skipSSLVerification,
         "verbose|v", "Enable verbose output.", &verbose,
@@ -435,14 +480,22 @@ int main(string[] args)
     if (parseArgs.helpWanted)
     {
         defaultGetoptPrinter(
-            "Generates a dub.selections.lock.json file from a dub.json, dub.sdl or, dub.selections.json.",
+            "Generates a dub.selections.lock.json file from one or more dub.json, dub.sdl or, dub.selections.json inputs.",
             parseArgs.options);
         return 0;
     }
-    if (!inputFilePath.exists || !inputFilePath.isFile)
+    if (inputFilePaths.empty)
     {
-        writefln("Input file path %s does not exist or is not a file.", inputFilePath);
+        writeln("At least one input file path must be specified.");
         return 1;
+    }
+    foreach (inputFilePath; inputFilePaths)
+    {
+        if (!inputFilePath.exists || !inputFilePath.isFile)
+        {
+            writefln("Input file path %s does not exist or is not a file.", inputFilePath);
+            return 1;
+        }
     }
     if (outputFilePath.exists && !outputFilePath.isFile)
     {
@@ -462,7 +515,11 @@ int main(string[] args)
             Flag!"SkipSSLVerification"),
         verbose.to!(Flag!"Verbose"));
 
-    auto packages = readDubDependencies(inputFilePath);
+    auto packages = inputFilePaths
+        .map!(inputFilePath => readDubDependencies(inputFilePath))
+        .join
+        .array
+        .resolveDubDependencies;
     packages.each!((ref p) => p.integrity = computePackageIntegrity(p));
     packages.each!((ref p) => p.targets = describePackage(p, p.mainTargetName));
     auto targetNameByPackage = packages.map!(p => tuple(p.name, p.mainTargetName)).assocArray;

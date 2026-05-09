@@ -13,7 +13,10 @@ build_test(
 
 dub_lock_dependencies(
     name = "dub_dependencies",
-    src = "dub.selections.json",
+    srcs = [
+        "dub.selections.extra.json",
+        "dub.selections.json",
+    ],
     dub_selections_lock = "dub.selections.lock.json",
     tags = ["manual"],
 )

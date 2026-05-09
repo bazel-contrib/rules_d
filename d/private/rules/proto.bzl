@@ -143,12 +143,12 @@ d_proto_aspect = aspect(
             cfg = "exec",
         ),
         "_protoc_gen_d": attr.label(
-            default = "@protobuf_d//protoc_gen_d:protoc-gen-d",
+            default = "@rules_d__protobuf_d//protoc_gen_d:protoc-gen-d",
             executable = True,
             cfg = "exec",
         ),
         "_runtime": attr.label(
-            default = "@protobuf_d//:protobuf",
+            default = "@rules_d__protobuf_d//:protobuf",
             providers = [DInfo],
         ),
         "_linux_constraint": attr.label(default = "@platforms//os:linux"),

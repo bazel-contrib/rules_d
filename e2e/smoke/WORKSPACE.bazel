@@ -107,7 +107,7 @@ http_archive(
 # you should fetch it *before* calling this.
 # Alternatively, you can skip calling this function, so long as you've
 # already fetched all the dependencies.
-load("@rules_d//d:repositories.bzl", "d_register_toolchains", "protobuf_d_dependencies", "rules_d_dependencies")
+load("@rules_d//d:repositories.bzl", "d_register_toolchains", "rules_d_dependencies")
 load("@rules_d//dub:repositories.bzl", "d_register_dub_repository")
 
 rules_d_dependencies()
@@ -115,8 +115,6 @@ rules_d_dependencies()
 d_register_dub_repository(
     dub_selections_lock = "//:dub.selections.lock.json",
 )
-
-protobuf_d_dependencies()
 
 d_register_toolchains(
     "dmd_toolchain",

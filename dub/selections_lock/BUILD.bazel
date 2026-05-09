@@ -10,7 +10,10 @@ d_binary(
         "DUB": "$(location //d:dub)",
     },
     visibility = ["//visibility:public"],
-    deps = ["//dub/private:d_utils"],
+    deps = [
+        "//dub/private:d_utils",
+        "@rules_d__semver//:semver",
+    ],
 )
 
 bzl_library(

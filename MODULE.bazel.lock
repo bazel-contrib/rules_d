@@ -238,35 +238,6 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//d:extensions.bzl%protobuf_d": {
-      "general": {
-        "bzlTransitiveDigest": "nnDcbNC+3MG3ddypeceZmkZyfVmahP+WHg9ZuXGqXPA=",
-        "usagesDigest": "WZkd19+Smea+t678N9IvTHAtUEaxmn1sv7+yHEix6HM=",
-        "recordedFileInputs": {},
-        "recordedDirentsInputs": {},
-        "envVariables": {},
-        "generatedRepoSpecs": {
-          "protobuf_d": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "strip_prefix": "protobuf-d-0.7.0",
-              "urls": [
-                "https://code.dlang.org/packages/protobuf/0.7.0.zip"
-              ],
-              "integrity": "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I="
-            }
-          }
-        },
-        "recordedRepoMappingEntries": [
-          [
-            "",
-            "bazel_tools",
-            "bazel_tools"
-          ]
-        ]
-      }
-    },
     "@@aspect_bazel_lib~//lib:extensions.bzl%toolchains": {
       "general": {
         "bzlTransitiveDigest": "a8tWABvj0Atq3WKbFAzcdfrByxB6/D+I6P+NXTkvIjE=",

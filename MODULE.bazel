@@ -26,9 +26,6 @@ bazel_dep(name = "rules_go", version = "0.59.0", dev_dependency = True)  # For g
 d = use_extension("//d:extensions.bzl", "d")
 d.toolchain(d_version = "dmd-2.112.0")
 d.toolchain(d_version = "ldc-1.41.0")
-use_repo(d, "d_toolchains")
-
-protobuf_d = use_extension("//d:extensions.bzl", "protobuf_d")
-use_repo(protobuf_d, "protobuf_d")
+use_repo(d, "d_toolchains", "rules_d__protobuf_d", "rules_d__semver")
 
 register_toolchains("@d_toolchains//:all")

@@ -13,6 +13,3 @@ dub.from_dub_selections(
     dub_selections_lock = "//:dub.selections.lock.json",
 )
 use_repo(dub, "dub")
-
-protobuf_d = use_extension("@rules_d//d:extensions.bzl", "protobuf_d")
-use_repo(protobuf_d, "protobuf_d")

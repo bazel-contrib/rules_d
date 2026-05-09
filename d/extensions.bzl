@@ -10,7 +10,7 @@ names (the latest version will be picked for each name) and can register them as
 effectively overriding the default named toolchain due to toolchain resolution precedence.
 """
 
-load(":repositories.bzl", "d_register_toolchains", "protobuf_d_dependencies", "select_compiler_by_os")
+load(":repositories.bzl", "d_register_toolchains", "dub_dependency", "select_compiler_by_os")
 
 _DEFAULT_NAME = "d"
 
@@ -27,6 +27,20 @@ and fails if none match.
 })
 
 def _toolchain_extension(module_ctx):
+    dub_dependency(
+        name = "rules_d__protobuf_d",
+        package = "protobuf",
+        version = "0.7.0",
+        integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=",
+        strip_prefix = "protobuf-d-0.7.0",
+    )
+    dub_dependency(
+        name = "rules_d__semver",
+        package = "semver",
+        version = "0.8.0",
+        sha256 = "144c8c9c0e308a4e226baeebcb6e0b335ab3b92d9a868bead5d61db4029b7e43",
+    )
+
     registrations = {}
     for mod in module_ctx.modules:
         for toolchain in mod.tags.toolchain:
@@ -64,11 +78,4 @@ d = module_extension(
     # regardless of the host platform.
     os_dependent = False,
     arch_dependent = False,
-)
-
-def _protobuf_d_extension(_module_ctx):
-    protobuf_d_dependencies()
-
-protobuf_d = module_extension(
-    implementation = _protobuf_d_extension,
 )

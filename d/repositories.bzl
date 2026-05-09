@@ -20,6 +20,8 @@ def http_archive(name, **kwargs):
 # and released only in semver majors.
 # This is all fixed by bzlmod, so we just tolerate it for now.
 def rules_d_dependencies():
+    """Fetches external repositories required by rules_d."""
+
     # The minimal version of bazel_skylib we require
     http_archive(
         name = "bazel_skylib",
@@ -41,20 +43,35 @@ def rules_d_dependencies():
         strip_prefix = "protobuf-30.2",
         url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v30.2.tar.gz",
     )
+    dub_dependency(
+        name = "rules_d__protobuf_d",
+        package = "protobuf",
+        version = "0.7.0",
+        integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=",
+        strip_prefix = "protobuf-d-0.7.0",
+    )
+    dub_dependency(
+        name = "rules_d__semver",
+        package = "semver",
+        version = "0.8.0",
+        sha256 = "144c8c9c0e308a4e226baeebcb6e0b335ab3b92d9a868bead5d61db4029b7e43",
+    )
 
-def protobuf_d_dependencies(name = "protobuf_d", version = "0.7.0", integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=", sha256 = ""):
-    """Fetches the protobuf DUB package used by d_proto_library.
+def dub_dependency(name, package, version, integrity = "", sha256 = "", strip_prefix = ""):
+    """Fetches a DUB package as an external repository.
 
     Args:
-        name: Repository name for the protobuf DUB package.
+        name: Repository name for the DUB package.
+        package: DUB package name.
         version: DUB package version.
         integrity: Optional SRI integrity for the DUB package archive.
         sha256: Optional sha256 for the DUB package archive.
+        strip_prefix: Optional archive strip prefix. Defaults to `{package}-{version}`.
     """
     kwargs = {
-        "strip_prefix": "protobuf-d-%s" % version,
+        "strip_prefix": strip_prefix or "%s-%s" % (package, version),
         "urls": [
-            "https://code.dlang.org/packages/protobuf/%s.zip" % version,
+            "https://code.dlang.org/packages/%s/%s.zip" % (package, version),
         ],
     }
     if integrity:

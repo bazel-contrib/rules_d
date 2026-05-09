@@ -6,7 +6,7 @@ load("@bazel_lib//lib:write_source_files.bzl", "write_source_file")
 
 def dub_lock_dependencies(
         name,
-        src = None,
+        srcs = None,
         dub_selections_lock = None,
         skip_ssl_verification = False,
         verbose = False,
@@ -15,7 +15,7 @@ def dub_lock_dependencies(
 
     Args:
         name: The dub dependencies target.
-        src: file containing the dub dependencies. Supported inputs are:
+        srcs: list of files containing the dub dependencies. Supported inputs are:
             * dub.sdl
             * dub.json
             * dub.selections.json
@@ -35,17 +35,13 @@ def dub_lock_dependencies(
     run_binary(
         name = name,
         tool = "@rules_d//dub/selections_lock:generate_selections_lock",
-        srcs = [
-            src,
-            "@rules_d//d:dub",
-        ],
+        srcs = srcs + ["@rules_d//d:dub"],
         args = [
             "--bazel_generating_target=//{}:{}".format(native.package_name(), update_target_name),
-            "--input=$(location {})".format(src),
             "--output=$(location {})".format(out_file),
             "--skip_ssl_verification={}".format(skip_ssl_verification),
             "--verbose={}".format(verbose),
-        ],
+        ] + ["--input=$(location {})".format(src) for src in srcs],
         env = {
             "DUB": "$(location @rules_d//d:dub)",
         },
