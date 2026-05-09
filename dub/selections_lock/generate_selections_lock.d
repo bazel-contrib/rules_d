@@ -1,13 +1,13 @@
 module dub.selections_lock.generate_selections_lock;
 
 import std.algorithm : canFind, each, find, filter, map, sort, startsWith;
-import std.array : array, assocArray, replace;
+import std.array : array, assocArray, replace, split;
 import std.conv : to;
 import std.exception : enforce;
 import std.file : copy, exists, getSize, isFile, mkdirRecurse, read, readText, rmdirRecurse, tempDir;
 import std.format : format;
 import std.json : parseJSON, JSONOptions, JSONType, JSONValue;
-import std.path : baseName, buildNormalizedPath, relativePath;
+import std.path : baseName, buildNormalizedPath, dirName, relativePath;
 import std.range : empty, join;
 import std.string : assumeUTF, endsWith, startsWith, stripRight;
 import std.stdio : File, toFile;
@@ -52,6 +52,7 @@ struct Package
     string name;
     string version_;
     string integrity;
+    string stripPrefix;
     string buildFileContent;
     string mainTargetName;
     Target[] targets;
@@ -86,27 +87,62 @@ Package[] parseDubSelectionsJson(string content)
     return json["versions"]
         .object
         .byKeyValue
+        .filter!(item => item.value.type == JSONType.string)
         .map!(item => Package(item.key, item.value.str))
         .array;
 }
 
-string generateDubSelectionsJson(string manifestFilePath)
+string manifestContentForDubUpgrade(string manifestFilePath)
+{
+    auto content = manifestFilePath.readText;
+    if (!manifestFilePath.baseName.endsWith(".json"))
+        return content;
+
+    auto json = content.parseJSON;
+    if (json.type != JSONType.object || !("dependencies" in json.object) ||
+        json["dependencies"].type != JSONType.object)
+        return content;
+
+    string[] localDependencies;
+    foreach (dependency; json["dependencies"].object.byKeyValue)
+    {
+        if (dependency.value.type == JSONType.object && "path" in dependency.value.object)
+            localDependencies ~= dependency.key;
+    }
+    if (localDependencies.empty)
+        return content;
+
+    foreach (dependencyName; localDependencies)
+        json["dependencies"].object.remove(dependencyName);
+
+    return json.toPrettyString(JSONOptions.doNotEscapeSlashes);
+}
+
+string generateDubSelectionsJson(string manifestFilePath, string[] manifestFilePaths)
 {
     import std.process : execute;
+    import std.stdio : writeln;
 
-    auto manifestFileName = manifestFilePath.baseName;
-    auto packagePath = buildNormalizedPath(config.cachePath, "__dub_manifest_root__");
-    if (packagePath.exists)
-        packagePath.rmdirRecurse;
-    packagePath.mkdirRecurse;
+    auto packageMirrorPath = buildNormalizedPath(config.cachePath, "__dub_manifest_root__");
+    if (packageMirrorPath.exists)
+        packageMirrorPath.rmdirRecurse;
+    packageMirrorPath.mkdirRecurse;
     scope (exit)
     {
-        if (packagePath.exists)
-            packagePath.rmdirRecurse;
+        if (packageMirrorPath.exists)
+            packageMirrorPath.rmdirRecurse;
     }
 
-    auto packageManifestFilePath = buildNormalizedPath(packagePath, manifestFileName);
-    manifestFilePath.copy(packageManifestFilePath);
+    foreach (inputManifestFilePath; manifestFilePaths)
+    {
+        auto packageManifestFilePath = buildNormalizedPath(packageMirrorPath, inputManifestFilePath);
+        packageManifestFilePath.dirName.mkdirRecurse;
+        inputManifestFilePath.manifestContentForDubUpgrade.toFile(packageManifestFilePath);
+        if (config.verbose)
+            writeln("Copied manifest file from ", inputManifestFilePath, " to ", packageManifestFilePath);
+    }
+
+    auto packagePath = buildNormalizedPath(packageMirrorPath, manifestFilePath.dirName);
 
     auto command = [
         config.dubExecutable,
@@ -116,6 +152,9 @@ string generateDubSelectionsJson(string manifestFilePath)
         "--cache=local",
         config.verbose ? "--verbose": "--quiet",
     ];
+
+    if (config.verbose)
+        writeln("Running dub command in ", packagePath, ": ", command.join(" "));
 
     auto result = execute(command);
     enforce(result.status == 0, "Failed to generate dub.selections.json from %s: %s".format(
@@ -127,7 +166,7 @@ string generateDubSelectionsJson(string manifestFilePath)
     return selectionsFilePath.readText;
 }
 
-Package[] readDubDependencies(string filePath)
+Package[] readDubDependencies(string filePath, string[] manifestFilePaths)
 {
     auto fileName = filePath.baseName;
     if (fileName == "dub.selections.json")
@@ -140,10 +179,10 @@ Package[] readDubDependencies(string filePath)
             "fileVersion" in json.object &&
             "versions" in json.object)
             return content.parseDubSelectionsJson;
-        return filePath.generateDubSelectionsJson.parseDubSelectionsJson;
+        return filePath.generateDubSelectionsJson(manifestFilePaths).parseDubSelectionsJson;
     }
     if (fileName == "dub.sdl")
-        return filePath.generateDubSelectionsJson.parseDubSelectionsJson;
+        return filePath.generateDubSelectionsJson(manifestFilePaths).parseDubSelectionsJson;
 
     enforce(false, "Unsupported input file %s. Expected JSON selections, dub.json, or dub.sdl.".format(
             filePath));
@@ -198,6 +237,37 @@ string computePackageIntegrity(Package package_)
     return computeIntegrityHash!256(package_.archiveFile);
 }
 
+string computePackageStripPrefix(Package package_)
+{
+    import std.zip : ZipArchive;
+
+    enforce(package_.archiveFile.exists, "Archive file %s does not exist.".format(
+            package_.archiveFile));
+    auto zip = new ZipArchive(package_.archiveFile.read);
+
+    string archiveRoot;
+    foreach (name, am; zip.directory)
+    {
+        auto segments = name.split("/");
+        enforce(!segments.empty && !segments[0].empty,
+            "Unexpected entry %s in archive.".format(name));
+        foreach (segment; segments)
+            enforce(segment != "..", "Unexpected entry %s in archive.".format(name));
+
+        if (segments.length < 2)
+        {
+            return "";
+        }
+        if (archiveRoot.empty)
+            archiveRoot = segments[0];
+        else if (archiveRoot != segments[0])
+        {
+            return "";
+        }
+    }
+    return archiveRoot;
+}
+
 void unpack(Package package_)
 {
     import std.zip : ZipArchive;
@@ -207,25 +277,30 @@ void unpack(Package package_)
     auto zip = new ZipArchive(package_.archiveFile.read);
     scope (failure)
     {
-        package_.unpackPath.rmdirRecurse;
+        if (package_.unpackPath.exists)
+            package_.unpackPath.rmdirRecurse;
     }
 
-    // create directories first
     foreach (name, am; zip.directory)
     {
-        enforce(name.startsWith(package_.versionedName ~ "/"),
-            "Unexpected entry %s in archive.".format(name));
+        auto relativeName = package_.stripPrefix.empty ? name : name[package_.stripPrefix.length + 1 .. $];
+        if (relativeName.empty)
+            continue;
         if (!name.endsWith("/"))
             continue;
-        buildNormalizedPath(package_.unpackPath, "..", name).mkdirRecurse;
+        buildNormalizedPath(package_.unpackPath, relativeName).mkdirRecurse;
     }
-    // then expand files
     foreach (name, am; zip.directory)
     {
+        auto relativeName = package_.stripPrefix.empty ? name : name[package_.stripPrefix.length + 1 .. $];
+        if (relativeName.empty)
+            continue;
         if (name.endsWith("/"))
             continue;
         zip.expand(am);
-        am.expandedData.toFile(buildNormalizedPath(package_.unpackPath, "..", name));
+        auto destination = buildNormalizedPath(package_.unpackPath, relativeName);
+        destination.dirName.mkdirRecurse;
+        am.expandedData.toFile(destination);
     }
 }
 
@@ -442,6 +517,8 @@ void writeDubSelectionsLockJson(Package[] packages, string filePath)
     outputJson["packages"] = packages.map!(p => tuple(p.name, (
             (p.buildFileContent.empty ?
             [] : [tuple("buildFileContent", p.buildFileContent)]) ~
+            (p.stripPrefix.empty || p.stripPrefix == p.versionedName ?
+            [] : [tuple("strip_prefix", p.stripPrefix)]) ~
             [
                 tuple("integrity", p.integrity),
                 tuple("url", p.url),
@@ -516,11 +593,12 @@ int main(string[] args)
         verbose.to!(Flag!"Verbose"));
 
     auto packages = inputFilePaths
-        .map!(inputFilePath => readDubDependencies(inputFilePath))
+        .map!(inputFilePath => readDubDependencies(inputFilePath, inputFilePaths))
         .join
         .array
         .resolveDubDependencies;
     packages.each!((ref p) => p.integrity = computePackageIntegrity(p));
+    packages.each!((ref p) => p.stripPrefix = computePackageStripPrefix(p));
     packages.each!((ref p) => p.targets = describePackage(p, p.mainTargetName));
     auto targetNameByPackage = packages.map!(p => tuple(p.name, p.mainTargetName)).assocArray;
     packages.each!((ref p) => p.expandDependencyTargetNames(targetNameByPackage));

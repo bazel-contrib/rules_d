@@ -11,7 +11,7 @@ def register_package(repository_ctx, package):
     repository_ctx.download_and_extract(
         url = package["url"],
         integrity = package["integrity"],
-        stripPrefix = "{}-{}".format(package["name"], package["version"]),
+        stripPrefix = package.get("strip_prefix", "{}-{}".format(package["name"], package["version"])),
         output = package["name"],
     )
     if "buildFileContent" in package:
