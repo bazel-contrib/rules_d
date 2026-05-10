@@ -39,16 +39,16 @@ def rules_d_dependencies():
     )
     http_archive(
         name = "protobuf",
-        sha256 = "07a43d88fe5a38e434c7f94129cad56a4c43a51f99336074d0799c2f7d4e44c5",
-        strip_prefix = "protobuf-30.2",
-        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v30.2.tar.gz",
+        sha256 = "d2081ab9528292f7980ef2d88d2be472453eea4222141046ad4f660874d5f24e",
+        strip_prefix = "protobuf-32.1",
+        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v32.1.tar.gz",
     )
     dub_dependency(
         name = "rules_d__protobuf_d",
         package = "protobuf",
-        version = "0.7.0",
-        integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=",
-        strip_prefix = "protobuf-d-0.7.0",
+        version = "0.7.1",
+        integrity = "sha256-3CRmkZrJzp17ke8nOI+V2StEIyxd8oIBYilSjY9RrFM=",
+        strip_prefix = "protobuf-d-0.7.1",
     )
     dub_dependency(
         name = "rules_d__semver",
