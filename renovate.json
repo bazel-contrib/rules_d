@@ -1,8 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    ":enablePreCommit",
-    ":lockFileMaintenance",
-    "config:best-practices"
-  ]
+  "extends": [":enablePreCommit", "config:best-practices"],
+  "lockFileMaintenance": {
+    "enabled": true
+  }
 }
