@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref_name != 'main' }}
 jobs:
   test:
-    uses: bazel-contrib/.github/.github/workflows/bazel.yaml@7e9a9d6849976a5b143c8bf10b37e419eeadf6c8 # v7.5.0
+    uses: bazel-contrib/.github/.github/workflows/bazel.yaml@e5ab8fc4c23cb13783fad499e8bd865fd9f6d669 # v7.6.0
     with:
       bazel_versions: |
         [
