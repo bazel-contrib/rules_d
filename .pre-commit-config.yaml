@@ -1,13 +1,6 @@
-# See CONTRIBUTING.md for instructions.
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
-# Commitizen runs in commit-msg stage
-# but we don't want to run the other hooks on commit messages
 default_stages: [pre-commit]
-# Use a slightly older version of node by default
-# as the default uses a very new version of GLIBC
 default_language_version:
-  node: 16.18.0
+  node: lts
 repos:
   - repo: meta
     hooks:
@@ -53,5 +46,4 @@ repos:
     rev: 43.150.0
     hooks:
       - id: renovate-config-validator
-        language_version: lts
         args: [--strict]
