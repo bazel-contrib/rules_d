@@ -3,6 +3,5 @@
   "extends": [":enablePreCommit", "config:best-practices"],
   "lockFileMaintenance": {
     "enabled": true
-  },
-  "allowedUnsafeExecutions": ["bazelModDeps"]
+  }
 }
