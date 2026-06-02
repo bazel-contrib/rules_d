@@ -1,22 +1,44 @@
 # Bazel Rules for the [D Programming Language](https://dlang.org)
 
-## API Documentation
+`rules_d` provides Bazel rules and toolchains for building D libraries,
+binaries, tests, protocol buffers, and projects that depend on DUB packages.
 
-https://registry.bazel.build/docs/rules_d
+## Documentation
+
+- [API documentation](https://registry.bazel.build/docs/rules_d)
+- [Bazel Central Registry module](https://registry.bazel.build/modules/rules_d)
+- [Releases](https://github.com/bazel-contrib/rules_d/releases)
+
+## Tutorials
+
+- [Using rules_d from a DUB project](docs/dub.md)
 
 ## Installation
 
-From the release you wish to use:
-<https://github.com/bazel-contrib/rules_d/releases>
-copy the WORKSPACE snippet into your `WORKSPACE` file.
+With Bzlmod, add `rules_d` to your `MODULE.bazel`:
 
-To use a commit rather than a release, you can point at any SHA of the repo.
+```starlark
+bazel_dep(name = "rules_d", version = "<version>")
+```
 
-For example to use commit `abc123`:
+Then configure a D toolchain:
 
-1. Replace `url = "https://github.com/bazel-contrib/rules_d/releases/download/v0.1.0/rules_d-v0.1.0.tar.gz"` with a GitHub-provided source archive like `url = "https://github.com/bazel-contrib/rules_d/archive/abc123.tar.gz"`
-1. Replace `strip_prefix = "rules_d-0.1.0"` with `strip_prefix = "rules_d-abc123"`
-1. Update the `sha256`. The easiest way to do this is to comment out the line, then Bazel will
-   print a message with the correct value. Note that GitHub source archives don't have a strong
-   guarantee on the sha256 stability, see
-   <https://github.blog/2023-02-21-update-on-the-future-stability-of-source-code-archives-and-hashes/>
+```starlark
+d = use_extension("@rules_d//d:extensions.bzl", "d")
+d.toolchain(d_version = "dmd-2.112.0")
+use_repo(d, "d_toolchains")
+
+register_toolchains("@d_toolchains//:all")
+```
+
+Use the latest published version from the
+[Bazel Central Registry](https://registry.bazel.build/modules/rules_d).
+
+## WORKSPACE
+
+For legacy `WORKSPACE` projects, copy the snippet from the release notes for
+the version you want to use.
+
+To use a commit instead of a release, point `http_archive` at a GitHub source
+archive such as `https://github.com/bazel-contrib/rules_d/archive/<sha>.tar.gz`,
+set `strip_prefix = "rules_d-<sha>"`, and update the checksum.
