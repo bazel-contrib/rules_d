@@ -23,8 +23,8 @@ bazel_dep(name = "rules_go", version = "0.59.0", dev_dependency = True)  # For g
 
 # Select first d toolchain available for the current platform.
 d = use_extension("//d:extensions.bzl", "d")
-d.toolchain(d_version = "dmd-2.112.0")
-d.toolchain(d_version = "ldc-1.41.0")
+d.toolchain(d_version = "dmd-2.112.0")  # dmd-2.112.1 uses a .7z archive on windows, which requires Bazel 9+.
+d.toolchain(d_version = "ldc-1.42.0")
 use_repo(d, "d_toolchains", "rules_d__protobuf_d", "rules_d__semver")
 
 register_toolchains("@d_toolchains//:all")

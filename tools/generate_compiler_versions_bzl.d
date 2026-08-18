@@ -19,7 +19,7 @@ import integrity_hash : computeIntegrityHash;
 string GITHUB_API_URL = "https://api.github.com/repos";
 string GITHUB_LDC_REPO = "ldc-developers/ldc";
 
-string[] ARCHIVE_TYPES = [".tar.xz", ".zip"]; // in order of the preference
+string[] ARCHIVE_TYPES = [".tar.xz", ".zip", ".7z"]; // in order of the preference
 string[] OSES = ["linux", "osx", "windows"];
 string[] CPUS = ["aarch64", "amd64", "arm64", "x86_64"];
 string DMD_REPO_URL = "https://downloads.dlang.org";
@@ -31,7 +31,7 @@ struct CompilerReleaseInfo
     string version_; // "2.104.0", "1.39.0", ...
     string os; // "linux" | "macos" | "windows"
     string cpu; // "x86_64" | "aarch64" ...
-    string archive; // ".tar.xz" | ".zip"
+    string archive; // ".tar.xz" | ".zip" | ".7z"
     string url;
     string fileName;
     string integrity; // computed integrity metadata
