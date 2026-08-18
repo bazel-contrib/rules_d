@@ -706,6 +706,20 @@ SDK_VERSIONS = {
             "integrity": "sha384-UQqEzWgYPA3+ir36kCurs7vJDwNrgcKzqC19UvhijwcehP3htkWFT6auEZCDq8Dl",
         },
     },
+    "dmd-2.112.1": {
+        "x86_64-unknown-linux-gnu": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.1/dmd.2.112.1.linux.tar.xz",
+            "integrity": "sha384-Rqcnr3z++ntbptQ9QvN/3yjfV5hq1ZGUw+SeLJStYGMXafiqTg2vtOcm00cBTfuN",
+        },
+        "x86_64-apple-darwin": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.1/dmd.2.112.1.osx.tar.xz",
+            "integrity": "sha384-cIf0O5QDHqUTccJCjbX+ZoFu9k+sCjp6B419hvYouaU9Gt0yARgZNFlh6ulcVbSp",
+        },
+        "x86_64-pc-windows-msvc": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.112.1/dmd.2.112.1.windows.7z",
+            "integrity": "sha384-1A0ayv3lLNKRwDsOx/ANRLu7BEngnf3rUryR6GDSwj6vSB8iQhMkc+TTvBfBj9en",
+        },
+    },
     "ldc-1.20.0": {
         "aarch64-unknown-linux-gnu": {
             "url": "https://github.com/ldc-developers/ldc/releases/download/v1.20.0/ldc2-1.20.0-linux-aarch64.tar.xz",
@@ -1194,6 +1208,24 @@ SDK_VERSIONS = {
         "x86_64-apple-darwin": {
             "url": "https://github.com/ldc-developers/ldc/releases/download/v1.41.0/ldc2-1.41.0-osx-x86_64.tar.xz",
             "integrity": "sha384-Fmbq2sAUplXQIceDail9Ylxy21QM1rgAm32tBUl/qXPux+p8NeDg5FRfsANywdhK",
+        },
+    },
+    "ldc-1.42.0": {
+        "aarch64-unknown-linux-gnu": {
+            "url": "https://github.com/ldc-developers/ldc/releases/download/v1.42.0/ldc2-1.42.0-linux-aarch64.tar.xz",
+            "integrity": "sha384-iareytuuERj/DiZFXsbMU4bPYVIpYMj9Or9OW7uAYofxrD5/ShWWP5hI571Prity",
+        },
+        "x86_64-unknown-linux-gnu": {
+            "url": "https://github.com/ldc-developers/ldc/releases/download/v1.42.0/ldc2-1.42.0-linux-x86_64.tar.xz",
+            "integrity": "sha384-AYt7QVV+0PfA9cxg25bne4lLFiMqEG7fzH1jbHq2o/zCgZMyKuw0iO3sOY1MO2gZ",
+        },
+        "aarch64-apple-darwin": {
+            "url": "https://github.com/ldc-developers/ldc/releases/download/v1.42.0/ldc2-1.42.0-osx-arm64.tar.xz",
+            "integrity": "sha384-ZUd86mgaN6HKx/MzwkQxFwiM+yvX73m92u5NYuNZM5K8JQTf+hKeenf9F0X/9+xR",
+        },
+        "x86_64-apple-darwin": {
+            "url": "https://github.com/ldc-developers/ldc/releases/download/v1.42.0/ldc2-1.42.0-osx-x86_64.tar.xz",
+            "integrity": "sha384-MxX72T/o4lUUqMuhZWGPXK4HHsLE+1MsANDIR09nNWFhxIHIUkpPEVa+SVizlpkZ",
         },
     },
 }
