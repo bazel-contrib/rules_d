@@ -5,7 +5,7 @@ binaries, tests, protocol buffers, and projects that depend on DUB packages.
 
 ## Documentation
 
-- [API documentation](https://registry.bazel.build/docs/rules_d)
+- [API documentation](https://registry.bazel.build/modules/rules_d/latest/docs)
 - [Bazel Central Registry module](https://registry.bazel.build/modules/rules_d)
 - [Releases](https://github.com/bazel-contrib/rules_d/releases)
 
