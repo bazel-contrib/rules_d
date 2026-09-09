@@ -30,15 +30,15 @@ def _toolchain_extension(module_ctx):
     dub_dependency(
         name = "rules_d__protobuf_d",
         package = "protobuf",
-        version = "0.7.0",
-        integrity = "sha256-AKNEUJlnV4gheWFEEaq92dyzmy94HhCMjE9zgxoP/9I=",
-        strip_prefix = "protobuf-d-0.7.0",
+        version = "0.7.2",
+        integrity = "sha256-t5CtpeDZAO1eBBxM7k+ix6IHg0EL0pI6/W8LRYkWPSo=",
+        strip_prefix = "protobuf-d-0.7.2",
     )
     dub_dependency(
         name = "rules_d__semver",
         package = "semver",
         version = "0.8.0",
-        sha256 = "144c8c9c0e308a4e226baeebcb6e0b335ab3b92d9a868bead5d61db4029b7e43",
+        integrity = "sha256-FEyMnA4wik4ia67ry24LM1qzuS2ahovq1dYdtAKbfkM=",
     )
 
     registrations = {}

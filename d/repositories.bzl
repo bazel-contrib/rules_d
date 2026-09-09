@@ -46,15 +46,15 @@ def rules_d_dependencies():
     dub_dependency(
         name = "rules_d__protobuf_d",
         package = "protobuf",
-        version = "0.7.1",
-        integrity = "sha256-3CRmkZrJzp17ke8nOI+V2StEIyxd8oIBYilSjY9RrFM=",
-        strip_prefix = "protobuf-d-0.7.1",
+        version = "0.7.2",
+        integrity = "sha256-t5CtpeDZAO1eBBxM7k+ix6IHg0EL0pI6/W8LRYkWPSo=",
+        strip_prefix = "protobuf-d-0.7.2",
     )
     dub_dependency(
         name = "rules_d__semver",
         package = "semver",
         version = "0.8.0",
-        sha256 = "144c8c9c0e308a4e226baeebcb6e0b335ab3b92d9a868bead5d61db4029b7e43",
+        integrity = "sha256-FEyMnA4wik4ia67ry24LM1qzuS2ahovq1dYdtAKbfkM=",
     )
 
 def dub_dependency(name, package, version, integrity = "", sha256 = "", strip_prefix = ""):
