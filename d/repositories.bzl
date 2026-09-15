@@ -39,9 +39,9 @@ def rules_d_dependencies():
     )
     http_archive(
         name = "protobuf",
-        sha256 = "d2081ab9528292f7980ef2d88d2be472453eea4222141046ad4f660874d5f24e",
-        strip_prefix = "protobuf-32.1",
-        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v32.1.tar.gz",
+        sha256 = "7a7baff8207a57f3fe5c233d432a09eba67bdfb55a3145839d0817cae8e807a4",
+        strip_prefix = "protobuf-36.1",
+        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v36.1.tar.gz",
     )
     dub_dependency(
         name = "rules_d__protobuf_d",
