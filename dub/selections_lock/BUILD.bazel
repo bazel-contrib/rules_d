@@ -22,7 +22,7 @@ d_binary(
     ],
     data = ["//d:dub"],
     env = {
-        "DUB": "$(location //d:dub)",
+        "DUB": "$(rootpath //d:dub)",
     },
     visibility = ["//visibility:public"],
     deps = [
@@ -37,7 +37,7 @@ d_binary(
     ],
     data = ["//d:dub"],
     env = {
-        "DUB": "$(location //d:dub)",
+        "DUB": "$(rootpath //d:dub)",
     },
     visibility = ["//visibility:public"],
     deps = [
