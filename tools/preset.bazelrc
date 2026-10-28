@@ -188,6 +188,12 @@ common:ci --remote_upload_local_results
 common --repo_env="JAVA_HOME=../bazel_tools/jdk"
 # Docs: https://registry.build/flag/bazel?filter=repo_env
 
+# Indicate that third party rulesets should not collect telemetry.
+# It's up to the ruleset to honor this setting.
+# see https://donottrack.sh
+common --repo_env="DO_NOT_TRACK=1"
+# Docs: https://registry.build/flag/bazel?filter=repo_env
+
 # Reuse sandbox directories between invocations.
 # Directories used by sandboxed non-worker execution may be reused to avoid unnecessary setup costs.
 # Saves time on sandbox creation and deletion when many of the same kind of action is spawned during the build.
