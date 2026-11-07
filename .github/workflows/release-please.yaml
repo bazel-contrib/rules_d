@@ -1,0 +1,49 @@
+name: Release Please
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # dispatch CI on the release PR branch
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+      tag-name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      # GITHUB_TOKEN-created tags/PRs do not trigger other workflows.
+      - name: Update release PR and release merged PRs
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run CI on the release PR
+        if: steps.release.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        run: |
+          branch=$(jq -er '.headBranchName' <<< "$RELEASE_PR")
+          gh workflow run ci.yaml --ref "$branch"
+  release:
+    needs: release-please
+    # Packaging must still run if updating the next release PR failed.
+    if: always() && needs.release-please.outputs.release-created == 'true'
+    uses: ./.github/workflows/release.yaml
+    with:
+      tag_name: ${{ needs.release-please.outputs.tag-name }}
+    secrets:
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write

@@ -1,7 +1,7 @@
 # Cut a release whenever a new tag is pushed to the repo.
 name: Release
 on:
-  # Can be triggered from the tag.yaml workflow
+  # Called explicitly after release-please creates a release.
   workflow_call:
     inputs:
       tag_name:
@@ -10,6 +10,13 @@ on:
     secrets:
       publish_token:
         required: true
+  # Retry packaging for an existing tag if a previous release failed.
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing git tag to release
+        required: true
+        type: string
   # Or, developers can manually push a tag from their clone
   push:
     tags:
@@ -19,11 +26,36 @@ permissions:
   attestations: write
   contents: write
 jobs:
+  notes:
+    runs-on: ubuntu-latest
+    outputs:
+      generate-release-notes: ${{ steps.notes.outputs.generate-release-notes }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag_name || github.ref_name }}
+      - name: Choose release notes source
+        id: notes
+        env:
+          TAG_NAME: ${{ inputs.tag_name || github.ref_name }}
+        run: |
+          entry=""
+          # Older manually pushed tags may predate this helper.
+          if [[ -f .github/workflows/changelog_entry.sh ]]; then
+            entry=$(bash .github/workflows/changelog_entry.sh "$TAG_NAME")
+          fi
+          if [[ -n "$entry" ]]; then
+            echo "generate-release-notes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "generate-release-notes=true" >> "$GITHUB_OUTPUT"
+          fi
   release:
+    needs: notes
     uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0 # renovate:ignore 1d798ff015ed0696433e01e2c3ccbb2abefadad7
     with:
       release_files: rules_d-*.tar.gz
       prerelease: false
+      generate_release_notes: ${{ needs.notes.outputs.generate-release-notes == 'true' }}
       tag_name: ${{ inputs.tag_name || github.ref_name }}
   publish:
     needs: release

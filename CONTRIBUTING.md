@@ -44,23 +44,70 @@ This means that any usage of `@rules_d` on your system will point to this folder
 
 ## Releasing
 
-Releases are automated on a cron trigger.
-The new version is determined automatically from the commit history, assuming the commit messages follow conventions, using
-https://github.com/marketplace/actions/conventional-commits-versioner-action.
-If you do nothing, eventually the newest commits will be released automatically as a patch or minor release.
-This automation is defined in .github/workflows/tag.yaml.
+[Release Please](https://github.com/googleapis/release-please) maintains a release
+PR as changes land on `main`. A maintainer reviews and merges that PR to release;
+this applies to patch, minor, and major releases.
 
-Rather than wait for the cron event, you can trigger manually. Navigate to
-https://github.com/bazel-contrib/rules_d/actions/workflows/tag.yaml
-and press the "Run workflow" button.
+Use Conventional Commit PR titles and squash merges so the resulting commits
+carry the intended release information:
 
-If you need control over the next release version, for example when making a release candidate for a new major,
-then: tag the repo and push the tag, for example
+- `fix:` bumps the patch version.
+- `feat:` bumps the minor version.
+- `!` or a `BREAKING CHANGE:` footer bumps the major version, even before 1.0.0.
+- Non-releasing changes such as `chore:` normally do not create a release PR.
+
+The release PR updates `CHANGELOG.md`, `version.txt`, and the release manifest.
+The root Bazel module uses the development version `0.0.0`.
+To override a proposed version, add a `Release-As: X.Y.Z` footer to a commit on
+`main` (for example, the squash commit of a PR). Review the updated release PR
+before merging it.
+
+The [Release Please workflow](https://github.com/bazel-contrib/rules_d/actions/workflows/release-please.yaml)
+runs on pushes to `main` and can also be dispatched manually. After the release
+PR is merged, it creates the tag and GitHub Release, then calls the
+release workflow to build archives and API documentation, upload
+attestations, and publish to BCR. The GitHub Release exists before its assets
+finish uploading. Changelog entries and installation instructions are included
+in the final release notes.
+
+### Authentication and release PR checks
+
+Release Please uses the built-in `GITHUB_TOKEN`. The repository must allow
+GitHub Actions to create pull requests (Settings > Actions > General), subject
+to organization policy. BCR publishing requires the `BCR_PUBLISH_TOKEN` secret.
+
+PRs created with `GITHUB_TOKEN` do not automatically trigger other workflows.
+After creating or updating a release PR, the workflow dispatches CI on its
+branch. CI runs the Bazel matrix and pre-commit checks and reports the
+`conclusion` check on the release PR commit. To rerun CI manually, select the
+release PR branch in the CI workflow's Run workflow menu.
+
+Release Please generates a Conventional Commit PR title. To run the PR-title
+check on a release PR, edit its title or description. This check must pass
+before merging if branch protection requires it.
+
+The Release Please workflow calls the release workflow directly for packaging
+and BCR publishing. Its tags do not trigger a separate tag-push workflow run.
+
+### Recovery and manual tags
+
+If packaging or asset upload fails after a tag is created, dispatch the
+[Release workflow](https://github.com/bazel-contrib/rules_d/actions/workflows/release.yaml)
+with that existing tag as `tag_name`. Rerunning Release Please alone does not
+retry packaging for an already-created release. If only BCR publication fails,
+retry the [Publish to BCR workflow](https://github.com/bazel-contrib/rules_d/actions/workflows/publish.yaml)
+with the tag.
+
+Manually pushed version tags trigger the release workflow. Tags without a
+matching changelog entry use GitHub-generated release notes alongside the
+installation instructions. For example:
 
 ```sh
-% git fetch
-% git tag v1.0.0-rc0 origin/main
-% git push origin v1.0.0-rc0
+git fetch
+git tag v1.0.0 origin/main
+git push origin v1.0.0
 ```
 
-Then watch the automation run on GitHub actions which creates the release.
+Manual tags use the stable-release and BCR publishing pipeline, including tags
+with prerelease suffixes. Merge release PRs for routine releases to keep the
+manifest synchronized with published versions.

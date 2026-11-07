@@ -23,6 +23,10 @@ tar --create --auto-compress \
     --directory "$(bazel --output_base="$docs" info bazel-bin)" \
     --file "$GITHUB_WORKSPACE/${ARCHIVE%.tar.gz}.docs.tar.gz" .
 
+# Include the same Conventional Commit notes reviewed in the release PR.
+bash .github/workflows/changelog_entry.sh "$TAG"
+echo
+
 cat << EOF
 ## Using Bzlmod with Bazel 7 or greater
 
