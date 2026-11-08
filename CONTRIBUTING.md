@@ -50,7 +50,8 @@ carry the intended release information:
 
 - `fix:` bumps the patch version.
 - `feat:` bumps the minor version.
-- `!` or a `BREAKING CHANGE:` footer bumps the major version, even before 1.0.0.
+- `!` or a `BREAKING CHANGE:` footer bumps the minor version before 1.0.0,
+  and the major version from 1.0.0 onward.
 - Non-releasing changes such as `chore:` normally do not create a release PR.
 
 The release PR updates `CHANGELOG.md`, `version.txt`, and the release manifest.
