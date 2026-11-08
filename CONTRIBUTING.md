@@ -54,8 +54,9 @@ carry the intended release information:
   and the major version from 1.0.0 onward.
 - Non-releasing changes such as `chore:` normally do not create a release PR.
 
-The release PR updates `CHANGELOG.md`, `version.txt`, and the release manifest.
-The root Bazel module uses the development version `0.0.0`.
+The release PR uses Release Please's `bazel` strategy to update `MODULE.bazel`,
+`CHANGELOG.md`, and the release manifest. The root Bazel module version tracks
+the released version.
 To override a proposed version, add a `Release-As: X.Y.Z` footer to a commit on
 `main` (for example, the squash commit of a PR). Review the updated release PR
 before merging it.
