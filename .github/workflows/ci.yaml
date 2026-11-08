@@ -30,7 +30,7 @@ jobs:
         ]
       exclude: |
         [
-          {"folder": ".", "bzlmodEnabled": false}
+          {"bzlmodEnabled": false}
         ]
       cache_save: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
       # Refresh cache snapshots per commit; PRs restore through the fallback key.

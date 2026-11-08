@@ -1,8 +1,4 @@
-"""Declare runtime dependencies
-
-These are needed for local dev, and users must install them as well.
-See https://docs.bazel.build/versions/main/skylark/deploying.html#dependencies
-"""
+"""Repository helpers for the D toolchain module extension."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
@@ -11,51 +7,6 @@ load("//d/private/sdk:versions.bzl", "SDK_VERSIONS")
 
 def http_archive(name, **kwargs):
     maybe(_http_archive, name = name, **kwargs)
-
-# WARNING: any changes in this function may be BREAKING CHANGES for users
-# because we'll fetch a dependency which may be different from one that
-# they were previously fetching later in their WORKSPACE setup, and now
-# ours took precedence. Such breakages are challenging for users, so any
-# changes in this function should be marked as BREAKING in the commit message
-# and released only in semver majors.
-# This is all fixed by bzlmod, so we just tolerate it for now.
-def rules_d_dependencies():
-    """Fetches external repositories required by rules_d."""
-
-    # The minimal version of bazel_skylib we require
-    http_archive(
-        name = "bazel_skylib",
-        sha256 = "6e78f0e57de26801f6f564fa7c4a48dc8b36873e416257a92bbb0937eeac8446",
-        urls = [
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.8.2/bazel-skylib-1.8.2.tar.gz",
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.8.2/bazel-skylib-1.8.2.tar.gz",
-        ],
-    )
-    http_archive(
-        name = "package_metadata",
-        sha256 = "5bd0cc7594ea528fd28f98d82457f157827d48cc20e07bcfdbb56072f35c8f67",
-        strip_prefix = "supply-chain-0.0.6/metadata",
-        url = "https://github.com/bazel-contrib/supply-chain/releases/download/v0.0.6/supply-chain-v0.0.6.tar.gz",
-    )
-    http_archive(
-        name = "protobuf",
-        sha256 = "d2081ab9528292f7980ef2d88d2be472453eea4222141046ad4f660874d5f24e",
-        strip_prefix = "protobuf-32.1",
-        url = "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v32.1.tar.gz",
-    )
-    dub_dependency(
-        name = "rules_d__protobuf_d",
-        package = "protobuf",
-        version = "0.7.2",
-        integrity = "sha256-t5CtpeDZAO1eBBxM7k+ix6IHg0EL0pI6/W8LRYkWPSo=",
-        strip_prefix = "protobuf-d-0.7.2",
-    )
-    dub_dependency(
-        name = "rules_d__semver",
-        package = "semver",
-        version = "0.8.0",
-        integrity = "sha256-FEyMnA4wik4ia67ry24LM1qzuS2ahovq1dYdtAKbfkM=",
-    )
 
 def dub_dependency(name, package, version, integrity = "", sha256 = "", strip_prefix = ""):
     """Fetches a DUB package as an external repository.
@@ -137,20 +88,13 @@ d_repositories = repository_rule(
     attrs = _ATTRS,
 )
 
-# Wrapper macro around everything above, this is the primary API
-def d_register_toolchains(name, register = True, **kwargs):
-    """Convenience macro for users which does typical setup.
+def d_register_toolchains(name, **kwargs):
+    """Creates SDK repositories and toolchain targets for the module extension.
 
-    - create a repository for each built-in platform like "d_linux_amd64"
-    - TODO: create a convenience repository for the host platform like "d_host"
-    - create a repository exposing toolchains for each platform like "d_platforms"
-    - register a toolchain pointing at each platform
-    Users can avoid this macro and do these steps themselves, if they want more control.
+    Register the generated toolchains in MODULE.bazel.
 
     Args:
         name: base name for all created repositories
-        register: whether to call through to native.register_toolchains.
-            Should be True for WORKSPACE users, but false when used under bzlmod extension
         **kwargs: passed to each d_repositories call
     """
     for platform in PLATFORMS.keys():
@@ -158,8 +102,6 @@ def d_register_toolchains(name, register = True, **kwargs):
         if not d_version or d_version not in SDK_VERSIONS or platform not in SDK_VERSIONS[d_version]:
             continue
         d_repositories(name = name + "_" + platform, platform = platform, **kwargs)
-        if register:
-            native.register_toolchains("@%s_toolchains//:%s_toolchain" % (name, platform))
 
     toolchains_repo(
         name = name + "_toolchains",

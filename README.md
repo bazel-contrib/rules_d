@@ -15,7 +15,7 @@ binaries, tests, protocol buffers, and projects that depend on DUB packages.
 
 ## Installation
 
-With Bzlmod, add `rules_d` to your `MODULE.bazel`:
+rules_d requires Bzlmod and Bazel 7.2.1 or later. Add `rules_d` to your `MODULE.bazel`:
 
 ```starlark
 bazel_dep(name = "rules_d", version = "<version>")
@@ -33,12 +33,3 @@ register_toolchains("@d_toolchains//:all")
 
 Use the latest published version from the
 [Bazel Central Registry](https://registry.bazel.build/modules/rules_d).
-
-## WORKSPACE
-
-For legacy `WORKSPACE` projects, copy the snippet from the release notes for
-the version you want to use.
-
-To use a commit instead of a release, point `http_archive` at a GitHub source
-archive such as `https://github.com/bazel-contrib/rules_d/archive/<sha>.tar.gz`,
-set `strip_prefix = "rules_d-<sha>"`, and update the checksum.

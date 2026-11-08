@@ -23,8 +23,6 @@ common:ci --lockfile_mode=update
 
 # project-specific settings
 startup --windows_enable_symlinks
-# workaround for bazel8 error when --enable_workspace and --enable_bzlmod=false
-common --incompatible_autoload_externally=
 # BoringSSL currently fails under GCC 16's const-qualified memchr warning.
 common:linux --per_file_copt=external/boringssl~/.+@-Wno-error=discarded-qualifiers
 # Protobuf 30.x requires C++17 for generated tools.
