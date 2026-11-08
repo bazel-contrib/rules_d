@@ -3,7 +3,7 @@
   "bootstrap-sha": "806c729b7e547d423c379932e919eebb43de3294",
   "packages": {
     ".": {
-      "release-type": "simple",
+      "release-type": "bazel",
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "bump-minor-pre-major": true,
