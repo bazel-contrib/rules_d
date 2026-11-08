@@ -13,7 +13,6 @@ ARCHIVE="rules_d-$TAG.tar.gz"
 
 # NB: configuration for 'git archive' is in /.gitattributes
 git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip > $ARCHIVE
-SHA=$(shasum -a 256 $ARCHIVE | awk '{print $1}')
 
 # Add generated API docs to the release, see https://github.com/bazelbuild/bazel-central-registry/issues/5593
 docs="$(mktemp -d)"; targets="$(mktemp)"
@@ -35,26 +34,10 @@ Add to your \`MODULE.bazel\` file:
 \`\`\`starlark
 bazel_dep(name = "rules_d", version = "${TAG:1}")
 
-d = use_extension("//d:extensions.bzl", "d")
+d = use_extension("@rules_d//d:extensions.bzl", "d")
 d.toolchain(d_version = "dmd-2.112.0")
 use_repo(d, "d_toolchains")
 
 register_toolchains("@d_toolchains//:all")
 \`\`\`
-
-## Using WORKSPACE
-
-Paste this snippet into your \`WORKSPACE.bazel\` file:
-
-\`\`\`starlark
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
-    name = "rules_d",
-    sha256 = "${SHA}",
-    strip_prefix = "${PREFIX}",
-    url = "https://github.com/bazel-contrib/rules_d/releases/download/${TAG}/${ARCHIVE}",
-)
 EOF
-
-awk 'f;/--SNIP--/{f=1}' e2e/smoke/WORKSPACE.bazel
-echo "\`\`\`"

@@ -1,4 +1,4 @@
-"""WORKSPACE APIs for integrating dub package manager with Bazel."""
+"""Repository rule for the DUB module extension."""
 
 load("//dub/private:packages.bzl", "register_package")
 
@@ -16,17 +16,3 @@ dub_repository = repository_rule(
         "dub_selections_lock": attr.label(mandatory = True, allow_single_file = True),
     },
 )
-
-def d_register_dub_repository(
-        dub_selections_lock,
-        name = "dub"):
-    """Registers a repository containing packages from dub.selections.lock.json.
-
-    Args:
-        dub_selections_lock: Path to the dub package lock file.
-        name: Name of the generated repository. Defaults to "dub".
-    """
-    dub_repository(
-        name = name,
-        dub_selections_lock = dub_selections_lock,
-    )

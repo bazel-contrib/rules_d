@@ -1,4 +1,4 @@
-"""Provides a simple way to test your rules as an external workspace."""
+"""Provides a simple way to test your rules as an external module."""
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_d//dub:defs.bzl", "dub_lock_dependencies")

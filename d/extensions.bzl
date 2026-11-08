@@ -56,7 +56,6 @@ def _toolchain_extension(module_ctx):
         d_register_toolchains(
             name = name,
             d_version = select_compiler_by_os(versions, module_ctx.os),
-            register = False,
         )
     return module_ctx.extension_metadata(
         # Return True if the behavior of the module extension is fully

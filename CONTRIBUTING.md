@@ -27,20 +27,17 @@ Run `bazel run //tools:gazelle` to keep them up-to-date.
 
 ## Using this as a development dependency of other rules
 
-You'll commonly find that you develop in another WORKSPACE, such as
-some other ruleset that depends on rules_d, or in a nested
-WORKSPACE in the integration_tests folder.
+When developing another module that depends on rules_d, add a local override
+in that project's `MODULE.bazel`:
 
-To always tell Bazel to use this directory rather than some release
-artifact or a version fetched from the internet, run this from this
-directory:
-
-```sh
-OVERRIDE="--override_repository=rules_d=$(pwd)/rules_d"
-echo "common $OVERRIDE" >> ~/.bazelrc
+```starlark
+local_path_override(
+    module_name = "rules_d",
+    path = "/absolute/path/to/rules_d",
+)
 ```
 
-This means that any usage of `@rules_d` on your system will point to this folder.
+The `e2e/smoke` module already uses a local override to test this checkout.
 
 ## Releasing
 
