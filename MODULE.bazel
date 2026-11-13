@@ -2,7 +2,7 @@
 
 module(
     name = "rules_d",
-    version = "0.12.1",
+    version = "0.13.0",
     bazel_compatibility = [">=7.2.1"],
 )
 
