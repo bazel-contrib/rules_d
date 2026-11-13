@@ -734,6 +734,34 @@ SDK_VERSIONS = {
             "integrity": "sha384-NrCIlgfebEz5q0BBOVZ3mDhPglGJ/5DrtdZCNa9U3SWajKAnzUZTgJhpT5H3CNE2",
         },
     },
+    "dmd-2.113.1": {
+        "x86_64-unknown-linux-gnu": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.113.1/dmd.2.113.1.linux.tar.xz",
+            "integrity": "sha384-f6r4MpUCn0A4otRZXLVE9thsjyWJjul7JJL1jh3+Xhtgc4qfUD+J/HTiBUVIq55b",
+        },
+        "x86_64-apple-darwin": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.113.1/dmd.2.113.1.osx.tar.xz",
+            "integrity": "sha384-KL5QRsYzJoykstCkPlGTQuBb+YzDsCOfTamZspU9DJgnJXsjz495W80fJ5kSsnXZ",
+        },
+        "x86_64-pc-windows-msvc": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.113.1/dmd.2.113.1.windows.7z",
+            "integrity": "sha384-RV74vfiLQv2qoq+dnAW9w0F4iiIgxGiN+EWs20FhJFSnH0oNRm5U9wiJ4tJL0R5/",
+        },
+    },
+    "dmd-2.114.0": {
+        "x86_64-unknown-linux-gnu": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.114.0/dmd.2.114.0.linux.tar.xz",
+            "integrity": "sha384-sskd/k6KbYkV8kHYCIUrpKZZViuKUJxqurYzCDP0EN98RoFZJyre6ygED7XQbmzx",
+        },
+        "x86_64-apple-darwin": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.114.0/dmd.2.114.0.osx.tar.xz",
+            "integrity": "sha384-UTwlrFK/zvQC2QFLjJPPX7vDvHFnwTWmwzvO4I7H85B+HqldpIRs/krZT8kxKz9x",
+        },
+        "x86_64-pc-windows-msvc": {
+            "url": "https://downloads.dlang.org/releases/2.x/2.114.0/dmd.2.114.0.windows.7z",
+            "integrity": "sha384-74eHO7owpov6cfUUSMTBtOT3LPX16hNW8D6Kg7dW0+rkeipMQ20IpP5neZXswGym",
+        },
+    },
     "ldc-1.20.0": {
         "aarch64-unknown-linux-gnu": {
             "url": "https://github.com/ldc-developers/ldc/releases/download/v1.20.0/ldc2-1.20.0-linux-aarch64.tar.xz",
