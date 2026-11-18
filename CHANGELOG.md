@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/bazel-contrib/rules_d/compare/v0.13.0...v0.13.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* honor disabled features and enable PIC when linking D ([70bc3a8](https://github.com/bazel-contrib/rules_d/commit/70bc3a800515ea8089d47c32a62003d231afadee)), closes [#276](https://github.com/bazel-contrib/rules_d/issues/276)
+
 ## [0.13.0](https://github.com/bazel-contrib/rules_d/compare/v0.12.1...v0.13.0) (2026-11-13)
 
 
