@@ -24,6 +24,7 @@ def link_action(ctx, d_info):
     ] + ([toolchain.druntime[CcInfo].linking_context] if toolchain.druntime else [])
     compilation_outputs = cc_common.create_compilation_outputs(
         objects = depset(direct = [d_info.compilation_output]),
+        pic_objects = depset(direct = [d_info.compilation_output]),
     )
     return cc_common.link(
         name = ctx.label.name,
