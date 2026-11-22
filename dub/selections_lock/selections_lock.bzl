@@ -38,12 +38,12 @@ def dub_lock_dependencies(
         srcs = srcs + ["@rules_d//d:dub"],
         args = [
             "--bazel_generating_target=//{}:{}".format(native.package_name(), update_target_name),
-            "--output=$(location {})".format(out_file),
+            "--output=$(execpath {})".format(out_file),
             "--skip_ssl_verification={}".format(skip_ssl_verification),
             "--verbose={}".format(verbose),
-        ] + ["--input=$(location {})".format(src) for src in srcs],
+        ] + ["--input=$(execpath {})".format(src) for src in srcs],
         env = {
-            "DUB": "$(location @rules_d//d:dub)",
+            "DUB": "$(execpath @rules_d//d:dub)",
         },
         outs = [out_file],
         progress_message = "Generating dub selections lock file...",
