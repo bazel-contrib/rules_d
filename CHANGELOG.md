@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.2](https://github.com/bazel-contrib/rules_d/compare/v0.13.1...v0.13.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* update buildifier to 10.2.0 and resolve lint warnings ([af4871c](https://github.com/bazel-contrib/rules_d/commit/af4871c53968ecbe0bb321d7f545083c337e08f8))
+
 ## [0.13.1](https://github.com/bazel-contrib/rules_d/compare/v0.13.0...v0.13.1) (2026-11-18)
 
 
